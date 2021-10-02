@@ -11,6 +11,8 @@
 
 #include "world/world.h"
 
+#include "text.h"
+
 namespace Minicube
 {
     class Renderer
@@ -24,5 +26,7 @@ namespace Minicube
         Shader m_shader;
         Camera* m_camera;
         World* m_world;
+        double frameTime;
+        double lastFrame = glfwGetTime();
     };
 }

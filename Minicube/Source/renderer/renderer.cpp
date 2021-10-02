@@ -2,7 +2,7 @@
 
 namespace Minicube
 {
-    Renderer::Renderer(Camera* camera, World* world)
+    Renderer::Renderer(Camera *camera, World *world)
     {
         if (!glfwInit())
         {
@@ -43,19 +43,25 @@ namespace Minicube
 
         m_shader.setMat4("projection", projection);
 
-
         m_camera = camera;
         m_world = world;
     }
 
     void Renderer::render()
     {
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        m_shader.use();
         m_shader.setMat4("view", m_camera->getMatrix());
 
         m_world->draw(m_shader);
+
+        double now = glfwGetTime();
+        frameTime = now - lastFrame;
+        lastFrame = now;
+
+        std::cout << 1.0f / frameTime << std::endl;
+        text::draw2DText(std::to_string(int(1.0f / frameTime)), 10, 720 - 26);
 
         getWindow()->swapBuffers();
     }
