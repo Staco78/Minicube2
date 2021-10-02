@@ -34,6 +34,21 @@ namespace Minicube
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_MULTISAMPLE);
         glEnable(GL_CULL_FACE);
+
+        m_shader.load("shaders/shader.vert", "shaders/shader.frag");
+
+        m_shader.use();
+    }
+
+    void Renderer::render()
+    {
+        m_shader.use();
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        getWindow()->swapBuffers();
     }
 
     Window *Renderer::getWindow()

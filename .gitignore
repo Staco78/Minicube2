@@ -2,4 +2,5 @@
 Build/
 ThirdParty/
 Lib/
-Bin/
+Bin/*
+!Bin/shaders/
