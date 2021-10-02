@@ -7,6 +7,8 @@
 
 #include "shader.h"
 
+#include "camera.h"
+
 namespace Minicube
 {
     class Renderer
@@ -14,7 +16,7 @@ namespace Minicube
     public:
         Renderer();
         Window* getWindow();
-        void render();
+        void render(Camera* camera);
     private:
         Window m_window;
         Shader m_shader;

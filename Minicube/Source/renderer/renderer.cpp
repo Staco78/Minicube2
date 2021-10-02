@@ -28,7 +28,7 @@ namespace Minicube
         std::cout << "Renderer initialized successfuly" << std::endl;
 
         glfwSwapInterval(1);
-        // glfwSetInputMode(m_window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(m_window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetInputMode(m_window.getWindow(), GLFW_STICKY_KEYS, GL_TRUE);
 
         glEnable(GL_DEPTH_TEST);
@@ -40,13 +40,18 @@ namespace Minicube
         m_shader.use();
     }
 
-    void Renderer::render()
+    void Renderer::render(Camera *camera)
     {
-        m_shader.use();
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        auto projection = glm::perspective(glm::radians(45.0f), 1080.0f / 720.0f, 0.1f, 100.0f);
+
+        m_shader.setMat4("projection", projection);
+        m_shader.setMat4("model", glm::mat4(1.0f));
+        m_shader.setMat4("view", camera->getMatrix());
+
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         getWindow()->swapBuffers();
     }
