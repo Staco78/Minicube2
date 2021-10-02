@@ -45,7 +45,7 @@ namespace Minicube
         lastX = xpos;
         lastY = ypos;
 
-        float sensitivity = 2.5f * deltaTime;
+        float sensitivity = 4.5f * deltaTime;
         xoffset *= sensitivity;
         yoffset *= -sensitivity;
 
@@ -69,7 +69,7 @@ namespace Minicube
         d.z = sin(glm::radians(yaw));
         glm::vec3 dir = glm::normalize(d);
 
-        float speed = 4 * deltaTime;
+        float speed = 12 * deltaTime;
         if (glfwGetKey(mp_window->getWindow(), GLFW_KEY_W) == GLFW_PRESS)
             pos -= speed * dir;
         if (glfwGetKey(mp_window->getWindow(), GLFW_KEY_S) == GLFW_PRESS)

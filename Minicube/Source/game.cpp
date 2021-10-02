@@ -2,19 +2,17 @@
 
 namespace Minicube
 {
-    Game::Game() : m_camera(m_renderer.getWindow())
+    Game::Game() : m_camera(m_renderer.getWindow()), m_renderer(&m_camera, &m_world)
     {
     }
 
     void Game::start()
     {
 
-        Block block;
-
         while (m_renderer.getWindow()->isOpen())
         {
             m_camera.update();
-            m_renderer.render(&m_camera);
+            m_renderer.render();
             glfwPollEvents();
         }
     }

@@ -2,7 +2,7 @@
 
 namespace Minicube
 {
-    Renderer::Renderer()
+    Renderer::Renderer(Camera* camera, World* world)
     {
         if (!glfwInit())
         {
@@ -38,20 +38,24 @@ namespace Minicube
         m_shader.load("shaders/shader.vert", "shaders/shader.frag");
 
         m_shader.use();
+
+        auto projection = glm::perspective(glm::radians(45.0f), 1080.0f / 720.0f, 0.1f, 300.0f);
+
+        m_shader.setMat4("projection", projection);
+
+
+        m_camera = camera;
+        m_world = world;
     }
 
-    void Renderer::render(Camera *camera)
+    void Renderer::render()
     {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        auto projection = glm::perspective(glm::radians(45.0f), 1080.0f / 720.0f, 0.1f, 100.0f);
+        m_shader.setMat4("view", m_camera->getMatrix());
 
-        m_shader.setMat4("projection", projection);
-        m_shader.setMat4("model", glm::mat4(1.0f));
-        m_shader.setMat4("view", camera->getMatrix());
-
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        m_world->draw(m_shader);
 
         getWindow()->swapBuffers();
     }

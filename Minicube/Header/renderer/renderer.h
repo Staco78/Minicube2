@@ -9,16 +9,20 @@
 
 #include "camera.h"
 
+#include "world/world.h"
+
 namespace Minicube
 {
     class Renderer
     {
     public:
-        Renderer();
+        Renderer(Camera* camera, World* world);
         Window* getWindow();
-        void render(Camera* camera);
+        void render();
     private:
         Window m_window;
         Shader m_shader;
+        Camera* m_camera;
+        World* m_world;
     };
 }
