@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Glew/glew.h> 
+#include <Glew/glew.h>
 #include <Glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -9,7 +9,6 @@
 #include <sstream>
 #include <iostream>
 
-
 class Shader
 {
 public:
@@ -17,15 +16,14 @@ public:
     unsigned int ID;
 
     // le constructeur lit et construit le shader
-    void load(const GLchar* vertexPath, const GLchar* fragmentPath);
+    void load(const GLchar *vertexPath, const GLchar *fragmentPath);
     // Activation du shader
-    void use();
+    void use() const;
     // fonctions utiles pour l'uniform
-    void setBool(const std::string& name, bool value) const;
-    void setInt(const std::string& name, int value) const;
-    void setFloat(const std::string& name, float value) const;
-    void setVec3(const std::string& name, glm::vec3 value) const;
-    void setVec3(const std::string& name, float x, float y, float z) const;
-    void setMat4(const std::string& name, const glm::mat4& value) const;
+    void setBool(const std::string &name, bool value) const;
+    void setInt(const std::string &name, int value) const;
+    void setFloat(const std::string &name, float value) const;
+    void setVec3(const std::string &name, glm::vec3 value) const;
+    void setVec3(const std::string &name, float x, float y, float z) const;
+    void setMat4(const std::string &name, const glm::mat4 &value) const;
 };
-

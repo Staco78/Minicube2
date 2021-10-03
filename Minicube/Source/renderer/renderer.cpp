@@ -27,7 +27,7 @@ namespace Minicube
 
         std::cout << "Renderer initialized successfuly" << std::endl;
 
-        glfwSwapInterval(1);
+        // glfwSwapInterval(1);
         glfwSetInputMode(m_window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetInputMode(m_window.getWindow(), GLFW_STICKY_KEYS, GL_TRUE);
 
@@ -52,6 +52,50 @@ namespace Minicube
 
     void Renderer::render()
     {
+
+        //debug
+        double now = glfwGetTime();
+        frameTime = now - lastFrame;
+        lastFrame = now;
+
+        glfwSetInputMode(getWindow()->getWindow(), GLFW_STICKY_KEYS, GL_FALSE);
+
+        if (lineModeTimer == 0)
+        {
+            if (glfwGetKey(getWindow()->getWindow(), GLFW_KEY_F2) == GLFW_PRESS)
+            {
+                lineMode = !lineMode;
+                lineModeTimer = 20;
+            }
+
+            // std::cout << 1.0f / frameTime << std::endl;
+        }
+
+        if (debugTimer == 0)
+        {
+            fps = int(1.0f / frameTime);
+            debugTimer = 20;
+        }
+
+        if (lineModeTimer > 0)
+            lineModeTimer--;
+
+        if (debugTimer > 0)
+            debugTimer--;
+
+        glfwSetInputMode(getWindow()->getWindow(), GLFW_STICKY_KEYS, GL_TRUE);
+
+        if (lineMode)
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        else
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        //
+        //
+        // drawing
+        //
+        //
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         m_shader.use();
@@ -59,12 +103,7 @@ namespace Minicube
 
         m_world->draw(m_shader);
 
-        double now = glfwGetTime();
-        frameTime = now - lastFrame;
-        lastFrame = now;
-
-        // std::cout << 1.0f / frameTime << std::endl;
-        text::draw2DText(std::to_string(int(1.0f / frameTime)), 10, m_window.getSize().y - 26);
+        text::draw2DText(std::to_string(fps), 10, m_window.getSize().y - 26);
 
         getWindow()->swapBuffers();
     }

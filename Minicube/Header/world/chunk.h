@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 
 #include "Glm/vec3.hpp"
 
@@ -47,15 +48,49 @@ namespace Minicube
         }
     };
 
+    class DynamicVBO
+    {
+    public:
+        DynamicVBO()
+        {
+            glGenBuffers(1, &ID);
+        }
+        void addData(std::vector<float> *data)
+        {
+            m_data.insert(m_data.end(), data->begin(), data->end());
+            delete data;
+        }
+        void sendData()
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, ID);
+            glBufferData(GL_ARRAY_BUFFER, m_data.size() * sizeof(float), m_data.data(), GL_DYNAMIC_DRAW);
+        }
+        int getSize()
+        {
+            return m_data.size();
+        }
+        unsigned int getTrianglesCount() { return (getSize() / 5); }
+        unsigned int getID() { return ID; }
+
+    private:
+        unsigned int ID;
+        std::vector<float> m_data;
+    };
+
     class Chunk
     {
     public:
         Chunk(glm::ivec2 pos);
         void draw(const Shader &shader);
         void addBlock(glm::uvec3 relativeBlockPos);
+        void constructVBO();
+
     private:
         BlockMap m_blocks;
         glm::ivec2 m_pos;
+        DynamicVBO m_VBO;
+        unsigned int m_VAO;
+        glm::mat4 m_model = glm::mat4(1.0f);
     };
 
 } // namespace Minicube

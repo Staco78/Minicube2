@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <Glew/glew.h>
 
 #include "window.h"
@@ -18,15 +17,20 @@ namespace Minicube
     class Renderer
     {
     public:
-        Renderer(Camera* camera, World* world);
-        Window* getWindow();
+        Renderer(Camera *camera, World *world);
+        Window *getWindow();
         void render();
+
     private:
         Window m_window;
         Shader m_shader;
-        Camera* m_camera;
-        World* m_world;
+        Camera *m_camera;
+        World *m_world;
         double frameTime;
         double lastFrame = glfwGetTime();
+        int lineModeTimer = 0;
+        int debugTimer = 0;
+        bool lineMode = false;
+        int fps = 0;
     };
 }
