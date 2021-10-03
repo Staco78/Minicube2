@@ -37,4 +37,18 @@ namespace Minicube
 
         std::cout << "Window opened successfuly" << std::endl;
     }
+
+    glm::ivec2 Window::getSize()
+    {
+        int x, y;
+        glfwGetWindowSize(m_window, &x, &y);
+        return glm::vec2(x, y);
+    }
+
+    float Window::getRatio()
+    {
+        int x, y;
+        glfwGetWindowSize(m_window, &x, &y);
+        return float(x) / float(y);
+    }
 }

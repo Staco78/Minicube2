@@ -39,12 +39,15 @@ namespace Minicube
 
         m_shader.use();
 
-        auto projection = glm::perspective(glm::radians(45.0f), 1080.0f / 720.0f, 0.1f, 300.0f);
+        auto projection = glm::perspective(glm::radians(45.0f), m_window.getRatio(), 0.1f, 300.0f);
 
         m_shader.setMat4("projection", projection);
 
         m_camera = camera;
         m_world = world;
+
+        text::init();
+        text::setProjection(glm::ortho(0.0f, float(m_window.getSize().x), 0.0f, float(m_window.getSize().y)));
     }
 
     void Renderer::render()
@@ -60,8 +63,8 @@ namespace Minicube
         frameTime = now - lastFrame;
         lastFrame = now;
 
-        std::cout << 1.0f / frameTime << std::endl;
-        text::draw2DText(std::to_string(int(1.0f / frameTime)), 10, 720 - 26);
+        // std::cout << 1.0f / frameTime << std::endl;
+        text::draw2DText(std::to_string(int(1.0f / frameTime)), 10, m_window.getSize().y - 26);
 
         getWindow()->swapBuffers();
     }

@@ -4,6 +4,8 @@
 
 #include <Glfw/glfw3.h>
 
+#include "Glm/vec2.hpp"
+
 namespace Minicube
 {
     class Window
@@ -13,6 +15,8 @@ namespace Minicube
         void open();
         bool isOpen();
         void swapBuffers();
+        glm::ivec2 getSize();
+        float getRatio();
         GLFWwindow *getWindow()
         {
             return m_window;

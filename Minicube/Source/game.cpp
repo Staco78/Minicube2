@@ -4,9 +4,7 @@ namespace Minicube
 {
     Game::Game() : m_camera(m_renderer.getWindow()), m_renderer(&m_camera, &m_world)
     {
-        text::init();
-        text::setProjection(glm::ortho(0.0f, 1080.0f, 0.0f, 720.0f));
-    }
+        }
 
     void Game::start()
     {
