@@ -2,7 +2,7 @@
 
 #include <Glew/glew.h>
 #include <Glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <Glm/gtc/type_ptr.hpp>
 
 #include <string>
 #include <fstream>

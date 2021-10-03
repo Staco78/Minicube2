@@ -1,6 +1,8 @@
 .vscode/
 Build/
+build/
 ThirdParty/
 Lib/
 Bin/*
 !Bin/shaders/
+!Bin/assets/

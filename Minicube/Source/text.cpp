@@ -26,7 +26,7 @@ namespace Minicube {
 
 		void init() {
 
-            m_shader.load("shaders/2Dtext.vert", "shaders/2Dtext.frag");
+            m_shader.load("shaders/2DText.vert", "shaders/2DText.frag");
 
 			FT_Library library;
 
