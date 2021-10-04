@@ -5,6 +5,7 @@
 
 #include "Glm/vec3.hpp"
 
+#include "chunkMap.h"
 #include "blocks/block.h"
 
 namespace std
@@ -26,6 +27,7 @@ namespace std
 
 namespace Minicube
 {
+
     class BlockMap : public std::map<glm::uvec3, Block *>
     {
     public:
@@ -80,17 +82,23 @@ namespace Minicube
     class Chunk
     {
     public:
-        Chunk(glm::ivec2 pos);
+        Chunk(ChunkMap* chunkMap, glm::ivec2 pos);
         void draw(const Shader &shader);
         void addBlock(glm::uvec3 relativeBlockPos);
         void constructVBO();
+        Block *getBlock(const glm::uvec3 &pos);
 
     private:
+        Block* getBlockInWorld(const glm::ivec3& pos);
+
         BlockMap m_blocks;
         glm::ivec2 m_pos;
         DynamicVBO m_VBO;
         unsigned int m_VAO;
         glm::mat4 m_model = glm::mat4(1.0f);
+        ChunkMap* m_chunkMap = nullptr;
+
+        bool m_isVBOConstructed = false;
     };
 
 } // namespace Minicube

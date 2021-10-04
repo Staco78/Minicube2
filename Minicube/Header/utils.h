@@ -13,7 +13,7 @@ namespace Minicube
             bottom,
             top
         };
-    } // namespace Utils
+    } // namespace utils
 
     namespace Vertexs
     {
