@@ -42,5 +42,11 @@ namespace Minicube
             for (auto it = this->begin(); it != this->end(); it++)
                 delete it->second;
         }
+
+        std::map<glm::ivec2, Minicube::Chunk *>::iterator remove(std::map<glm::ivec2, Minicube::Chunk *>::iterator &it)
+        {
+            delete it->second;
+            return this->erase(it);
+        }
     };
 }

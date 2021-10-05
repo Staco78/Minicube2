@@ -2,7 +2,7 @@
 
 namespace Minicube
 {
-    Game::Game() : m_camera(m_renderer.getWindow()), m_renderer(&m_camera, &m_world)
+    Game::Game() : m_camera(m_renderer.getWindow()), m_world(&m_camera), m_renderer(&m_camera, &m_world)
     {
     }
 

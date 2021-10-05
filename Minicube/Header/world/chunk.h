@@ -87,6 +87,9 @@ namespace Minicube
         void addBlock(glm::uvec3 relativeBlockPos);
         void constructVBO();
         Block *getBlock(const glm::uvec3 &pos);
+        glm::ivec2 getPos() {
+            return m_pos;
+        }
 
     private:
         Block* getBlockInWorld(const glm::ivec3& pos);

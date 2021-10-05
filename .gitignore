@@ -6,3 +6,4 @@ Lib/
 Bin/*
 !Bin/shaders/
 !Bin/assets/
+start.sh
