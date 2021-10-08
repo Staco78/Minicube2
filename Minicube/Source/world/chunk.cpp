@@ -7,6 +7,8 @@ namespace Minicube
         m_chunkMap = chunkMap;
         m_pos = pos;
 
+        std::cout << sizeof(Chunk) << std::endl;
+
         // m_blocks[glm::uvec3(0, 0, 0)] = new Block(glm::uvec3(0, 0, 0));
         // m_blocks[glm::uvec3(0, 0, 1)] = new Block(glm::uvec3(0, 0, 1));
 
@@ -23,14 +25,15 @@ namespace Minicube
         m_model = glm::translate(m_model, glm::vec3(pos.x * 16, 0, pos.y * 16));
 
         for (int x = 0; x < 16; x++)
-            for (int y = 0; y < 6; y++)
-                for (int z = 0; z < 16; z++)
-                    addBlock(glm::uvec3(x, y, z));
+            // for (int y = 0; y < 6; y++)
+            for (int z = 0; z < 16; z++)
+                addBlock(glm::uvec3(x, 0, z));
+
+        std::cout << "chunk constructed\n";
     }
 
     void Chunk::draw(const Shader &shader)
     {
-
         if (!m_isVBOConstructed)
             constructVBO();
 

@@ -14,6 +14,7 @@ namespace Minicube
 
             // drawing
             m_camera.update();
+            m_world.updateVisibleChunks();
             m_renderer.render();
             glfwPollEvents();
         }

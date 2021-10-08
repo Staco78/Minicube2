@@ -30,7 +30,6 @@ namespace Minicube
     public:
         Chunk *get(glm::ivec2 key)
         {
-
             auto it = find(key);
             if (it == end())
                 return nullptr;
@@ -43,10 +42,10 @@ namespace Minicube
                 delete it->second;
         }
 
-        std::map<glm::ivec2, Minicube::Chunk *>::iterator remove(std::map<glm::ivec2, Minicube::Chunk *>::iterator &it)
-        {
-            delete it->second;
-            return this->erase(it);
-        }
+        // std::map<glm::ivec2, Minicube::Chunk *>::iterator remove(std::map<glm::ivec2, Minicube::Chunk *>::iterator &it)
+        // {
+        //     delete it->second;
+        //     return this->erase(it);
+        // }
     };
 }

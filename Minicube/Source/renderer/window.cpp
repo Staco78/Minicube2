@@ -22,7 +22,7 @@ namespace Minicube
 
     void Window::open()
     {
-        m_window = glfwCreateWindow(1080, 720, "Minicube", nullptr, nullptr);
+        m_window = glfwCreateWindow(1920, 1080, "Minicube", nullptr, nullptr);
 
         if (!m_window)
         {

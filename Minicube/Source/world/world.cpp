@@ -5,41 +5,66 @@ namespace Minicube
     World::World(Camera *camera)
     {
         m_camera = camera;
+
+        m_chunks[glm::ivec2(0, 0)] = new Chunk(&m_chunks, glm::ivec2(0, 0));
     }
 
-    void World::draw(const Shader &shader)
+    bool isVisible(const glm::ivec2 &chunkPos, const glm::ivec2 &playerChunkPos, int renderDistance)
     {
-        int renderDistance = 3;
+        return chunkPos.x >= playerChunkPos.x - renderDistance && chunkPos.x <= playerChunkPos.x + renderDistance &&
+               chunkPos.y >= playerChunkPos.y - renderDistance && chunkPos.y <= playerChunkPos.y + renderDistance;
+    }
+
+    void World::updateVisibleChunks()
+    {
         glm::ivec2 playerChunkPos = glm::ivec2(floor(m_camera->getPosition().x / 16.0), floor(m_camera->getPosition().z / 16.0));
-        Chunk *playerChunk = getChunk(playerChunkPos);
-        if (playerChunk == nullptr)
-        {
-            m_chunks[playerChunkPos] = new Chunk(&m_chunks, playerChunkPos);
-            playerChunk = getChunk(playerChunkPos);
-        }
-        for (int x = playerChunk->getPos().x - renderDistance; x <= playerChunk->getPos().x + renderDistance; x++)
-            for (int y = playerChunk->getPos().y - renderDistance; y <= playerChunk->getPos().y + renderDistance; y++)
-            {
-                Chunk *chunk = getChunk(glm::ivec2(x, y));
-                if (chunk == nullptr)
-                    m_chunks[glm::ivec2(x, y)] = new Chunk(&m_chunks, glm::ivec2(x, y));
-            }
+
+        std::vector<Chunk *> free;
 
         auto it = m_chunks.begin();
         while (it != m_chunks.end())
         {
-            if (it->second->getPos().x > playerChunk->getPos().x - renderDistance &&
-                it->second->getPos().x < playerChunk->getPos().x + renderDistance &&
-                it->second->getPos().y > playerChunk->getPos().y - renderDistance &&
-                it->second->getPos().y < playerChunk->getPos().y + renderDistance)
-                
-                it->second->draw(shader);
-            else
+            if (!isVisible(it->second->getPos(), playerChunkPos, m_renderDistance))
             {
-                it = m_chunks.remove(it);
+                it->second->~Chunk();
+                free.push_back(it->second);
+                it = m_chunks.erase(it);
             }
-            it++;
+            else
+                it++;
         }
+
+        for (int x = playerChunkPos.x - m_renderDistance; x <= playerChunkPos.x + m_renderDistance; x++)
+        {
+            for (int y = playerChunkPos.y - m_renderDistance; y <= playerChunkPos.y + m_renderDistance; y++)
+            {
+                glm::ivec2 pos(x, y);
+                if (getChunk(pos) == nullptr)
+                {
+                    if (free.size() == 0)
+                    {
+                        m_chunks[pos] = new Chunk(&m_chunks, pos);
+                    }
+
+                    else
+                    {
+                        Chunk *ptr = free.back();
+                        free.pop_back();
+
+                        void *place = ptr;
+                        m_chunks[pos] = new (place) Chunk(&m_chunks, pos);
+                    }
+                }
+            }
+        }
+
+        // assert(free.size() == 0);
+    }
+
+    void World::draw(const Shader &shader)
+    {
+        for (auto it = m_chunks.begin(); it != m_chunks.end(); it++)
+            it->second->draw(shader);
     }
 
     Chunk *World::getChunk(const glm::ivec2 &pos)

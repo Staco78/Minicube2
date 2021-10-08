@@ -5,7 +5,6 @@
 int main()
 {
 
-
     Minicube::Game game;
     game.start();
 

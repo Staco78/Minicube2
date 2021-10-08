@@ -45,6 +45,7 @@ namespace Minicube
 
         ~BlockMap()
         {
+
             for (auto it = this->begin(); it != this->end(); it++)
                 delete it->second;
         }
@@ -82,25 +83,28 @@ namespace Minicube
     class Chunk
     {
     public:
-        Chunk(ChunkMap* chunkMap, glm::ivec2 pos);
+        Chunk(ChunkMap *chunkMap, glm::ivec2 pos);
+        ~Chunk(){
+            std::cout << "chunk destructed\n";
+        }
         void draw(const Shader &shader);
         void addBlock(glm::uvec3 relativeBlockPos);
         void constructVBO();
         Block *getBlock(const glm::uvec3 &pos);
-        glm::ivec2 getPos() {
+        glm::ivec2 getPos()
+        {
             return m_pos;
         }
 
     private:
-        Block* getBlockInWorld(const glm::ivec3& pos);
+        Block *getBlockInWorld(const glm::ivec3 &pos);
 
         BlockMap m_blocks;
         glm::ivec2 m_pos;
         DynamicVBO m_VBO;
         unsigned int m_VAO;
         glm::mat4 m_model = glm::mat4(1.0f);
-        ChunkMap* m_chunkMap = nullptr;
-
+        ChunkMap *m_chunkMap = nullptr;
         bool m_isVBOConstructed = false;
     };
 

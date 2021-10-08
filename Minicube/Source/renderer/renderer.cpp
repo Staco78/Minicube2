@@ -27,7 +27,7 @@ namespace Minicube
 
         std::cout << "Renderer initialized successfuly" << std::endl;
 
-        // glfwSwapInterval(1);
+        glfwSwapInterval(1);
         glfwSetInputMode(m_window.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glfwSetInputMode(m_window.getWindow(), GLFW_STICKY_KEYS, GL_TRUE);
 

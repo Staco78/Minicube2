@@ -17,6 +17,7 @@ namespace Minicube
     {
     public:
         World(Camera* camera);
+        void updateVisibleChunks();
         void draw(const Shader &shader);
         Chunk *getChunk(const glm::ivec2 &pos);
         Block *getBlock(const glm::ivec3 &pos);
@@ -24,5 +25,6 @@ namespace Minicube
     private:
         ChunkMap m_chunks;
         Camera* m_camera = nullptr;
+        int m_renderDistance = 12;
     };
 } // namespace Minicube
