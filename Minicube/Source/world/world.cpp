@@ -5,8 +5,6 @@ namespace Minicube
     World::World(Camera *camera)
     {
         m_camera = camera;
-
-        m_chunks[glm::ivec2(0, 0)] = new Chunk(&m_chunks, glm::ivec2(0, 0));
     }
 
     bool isVisible(const glm::ivec2 &chunkPos, const glm::ivec2 &playerChunkPos, int renderDistance)
@@ -45,7 +43,6 @@ namespace Minicube
                     {
                         m_chunks[pos] = new Chunk(&m_chunks, pos);
                     }
-
                     else
                     {
                         Chunk *ptr = free.back();
@@ -54,17 +51,17 @@ namespace Minicube
                         void *place = ptr;
                         m_chunks[pos] = new (place) Chunk(&m_chunks, pos);
                     }
+                    m_chunks[pos]->generate();
                 }
             }
         }
-
-        // assert(free.size() == 0);
     }
 
     void World::draw(const Shader &shader)
     {
+        int VBOConstructed = 0;
         for (auto it = m_chunks.begin(); it != m_chunks.end(); it++)
-            it->second->draw(shader);
+            it->second->draw(shader, VBOConstructed);
     }
 
     Chunk *World::getChunk(const glm::ivec2 &pos)

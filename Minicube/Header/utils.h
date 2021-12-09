@@ -15,7 +15,7 @@ namespace Minicube
         };
     } // namespace utils
 
-    namespace Vertexs
+    namespace Vertices
     {
         namespace cube
         {
@@ -75,6 +75,6 @@ namespace Minicube
                 -0.5f, 0.5f, 0.5f, 0.0f, 0.0f   // bottom-left
             };
         }
-    } // namespace Vertexs
+    } // namespace Vertices
 
 } // namespace Minicube

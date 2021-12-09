@@ -53,7 +53,7 @@ namespace Minicube
     void Renderer::render()
     {
 
-        //debug
+        // debug
         double now = glfwGetTime();
         frameTime = now - lastFrame;
         lastFrame = now;

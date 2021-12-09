@@ -30,7 +30,7 @@ namespace Minicube
         double lastFrame = glfwGetTime();
         int lineModeTimer = 0;
         int debugTimer = 0;
-        bool lineMode = false;
+        bool lineMode = true;
         int fps = 0;
     };
 }
