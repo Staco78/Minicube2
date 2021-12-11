@@ -39,7 +39,7 @@ namespace Minicube
 
         m_shader.use();
 
-        auto projection = glm::perspective(glm::radians(45.0f), m_window.getRatio(), 0.1f, 300.0f);
+        auto projection = glm::perspective(glm::radians(70.0f), m_window.getRatio(), 0.1f, 300.0f);
 
         m_shader.setMat4("projection", projection);
 

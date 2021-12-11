@@ -7,17 +7,15 @@ namespace Minicube
         m_camera = camera;
     }
 
-    bool isVisible(const glm::ivec2 &chunkPos, const glm::ivec2 &playerChunkPos, int renderDistance)
+    bool isVisible(const glm::ivec3 &chunkPos, const glm::ivec3 &playerChunkPos, int renderDistance)
     {
         return chunkPos.x >= playerChunkPos.x - renderDistance && chunkPos.x <= playerChunkPos.x + renderDistance &&
-               chunkPos.y >= playerChunkPos.y - renderDistance && chunkPos.y <= playerChunkPos.y + renderDistance;
+               chunkPos.z >= playerChunkPos.z - renderDistance && chunkPos.z <= playerChunkPos.z + renderDistance;
     }
 
     void World::updateVisibleChunks()
     {
-        glm::ivec2 playerChunkPos = glm::ivec2(floor(m_camera->getPosition().x / 16.0), floor(m_camera->getPosition().z / 16.0));
-
-        std::vector<Chunk *> free;
+        glm::ivec3 playerChunkPos = glm::ivec3(floor(m_camera->getPosition().x / 16.0), floor(m_camera->getPosition().y / 16.0), floor(m_camera->getPosition().z / 16.0));
 
         auto it = m_chunks.begin();
         while (it != m_chunks.end())
@@ -25,7 +23,6 @@ namespace Minicube
             if (!isVisible(it->second->getPos(), playerChunkPos, m_renderDistance))
             {
                 it->second->~Chunk();
-                free.push_back(it->second);
                 it = m_chunks.erase(it);
             }
             else
@@ -34,24 +31,17 @@ namespace Minicube
 
         for (int x = playerChunkPos.x - m_renderDistance; x <= playerChunkPos.x + m_renderDistance; x++)
         {
-            for (int y = playerChunkPos.y - m_renderDistance; y <= playerChunkPos.y + m_renderDistance; y++)
+            for (int y = 0; y <= 5; y++)
             {
-                glm::ivec2 pos(x, y);
-                if (getChunk(pos) == nullptr)
+                for (int z = playerChunkPos.z - m_renderDistance; z <= playerChunkPos.z + m_renderDistance; z++)
                 {
-                    if (free.size() == 0)
+                    glm::ivec3 pos(x, y, z);
+                    if (getChunk(pos) == nullptr)
                     {
-                        m_chunks[pos] = new Chunk(&m_chunks, pos);
-                    }
-                    else
-                    {
-                        Chunk *ptr = free.back();
-                        free.pop_back();
 
-                        void *place = ptr;
-                        m_chunks[pos] = new (place) Chunk(&m_chunks, pos);
+                        m_chunks[pos] = new Chunk(&m_chunks, pos);
+                        m_chunks[pos]->generate();
                     }
-                    m_chunks[pos]->generate();
                 }
             }
         }
@@ -64,7 +54,7 @@ namespace Minicube
             it->second->draw(shader, VBOConstructed);
     }
 
-    Chunk *World::getChunk(const glm::ivec2 &pos)
+    Chunk *World::getChunk(const glm::ivec3 &pos)
     {
         return m_chunks.get(pos);
     }
@@ -72,9 +62,10 @@ namespace Minicube
     Block *World::getBlock(const glm::ivec3 &pos)
     {
 
-        Chunk *chunk = m_chunks.get(glm::ivec2(floor(pos.x / 16.0), floor(pos.z / 16.0)));
+        Chunk *chunk = m_chunks.get(glm::ivec3(floor(pos.x / 16.0), floor(pos.y / 16.0), floor(pos.z / 16.0)));
 
         int x;
+        int y;
         int z;
 
         if (pos.x % 16 == 0)
@@ -84,6 +75,13 @@ namespace Minicube
         else
             x = 16 + (pos.x % 16);
 
+        if (pos.y % 16 == 0)
+            y = 0;
+        else if (pos.y >= 0)
+            y = pos.y % 16;
+        else
+            y = 16 + (pos.y % 16);
+
         if (pos.z % 16 == 0)
             z = 0;
         else if (pos.z >= 0)
@@ -91,7 +89,7 @@ namespace Minicube
         else
             z = 16 + (pos.z % 16);
 
-        return chunk->getBlock(glm::uvec3(x, pos.y, z));
+        return chunk->getBlock(x, y, z);
     }
 
 } // namespace Minicube

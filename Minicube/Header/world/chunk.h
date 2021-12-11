@@ -132,28 +132,28 @@ namespace
 namespace Minicube
 {
 
-    class BlockMap : public std::map<glm::uvec3, Block *>
-    {
-    public:
-        Block *get(glm::ivec3 pos)
-        {
+    // class BlockMap : public std::map<glm::uvec3, Block *>
+    // {
+    // public:
+    //     Block *get(glm::ivec3 pos)
+    //     {
 
-            if (pos.x < 0 || pos.y < 0 || pos.z < 0 || pos.x > 15 || pos.z > 15)
-                return nullptr;
+    //         if (pos.x < 0 || pos.y < 0 || pos.z < 0 || pos.x > 15 || pos.y > 15 || pos.z > 15)
+    //             return nullptr;
 
-            auto it = find(pos);
-            if (it == end())
-                return nullptr;
-            return it->second;
-        }
+    //         auto it = find(pos);
+    //         if (it == end())
+    //             return nullptr;
+    //         return it->second;
+    //     }
 
-        ~BlockMap()
-        {
+    //     ~BlockMap()
+    //     {
 
-            // for (auto it = this->begin(); it != this->end(); it++)
-            //     free(it->second);
-        }
-    };
+    //         // for (auto it = this->begin(); it != this->end(); it++)
+    //         //     free(it->second);
+    //     }
+    // };
 
     class DynamicVBO
     {
@@ -183,16 +183,17 @@ namespace Minicube
     class Chunk
     {
     public:
-        Chunk(ChunkMap *chunkMap, glm::ivec2 pos);
+        Chunk(ChunkMap *chunkMap, glm::ivec3 pos);
         ~Chunk()
         {
+            free(m_blocks);
             std::cout << "chunk destructed\n";
         }
         void draw(const Shader &shader, int &isVBOConstructable);
-        void addBlock(glm::uvec3 relativeBlockPos, Block *block);
+        void addBlock(int x, int y, int z, Block &block);
         void constructVBO();
-        Block *getBlock(const glm::uvec3 &pos);
-        glm::ivec2 getPos()
+        Block *getBlock(int x, int y, int z);
+        glm::ivec3 getPos()
         {
             return m_pos;
         }
@@ -200,13 +201,26 @@ namespace Minicube
         void generate();
 
     private:
+        inline int getBlockIndex(int x, int y, int z)
+        {
+            return (x + y * 16 + z * 256);
+        }
+        inline glm::uvec3 getBlockPos(int index)
+        {
+            return glm::uvec3(index % 16, index / 16 % 16, index / 256);
+        }
+
         Block *getBlockInWorld(int x, int y, int z)
         {
 
-            int _x = x + m_pos.x * 16;
-            int _z = z + m_pos.y * 16;
+            if (!(x < 0 || y < 0 || z < 0 || x > 15 || y > 15 || z > 15))
+                return &m_blocks[getBlockIndex(x, y, z)];
 
-            Chunk *chunk = m_chunkMap->get(glm::ivec2(floor(_x / 16.0), floor(_z / 16.0)));
+            int _x = x + m_pos.x * 16;
+            int _y = y + m_pos.y * 16;
+            int _z = z + m_pos.z * 16;
+
+            Chunk *chunk = m_chunkMap->get(glm::ivec3(floor(_x / 16.0), floor(_y / 16.0), floor(_z / 16.0)));
 
             if (chunk == nullptr)
                 return nullptr;
@@ -218,6 +232,13 @@ namespace Minicube
             else
                 x = 16 + (_x % 16);
 
+            if (_y % 16 == 0)
+                y = 0;
+            else if (_y >= 0)
+                y = _y % 16;
+            else
+                y = 16 + (_y % 16);
+
             if (_z % 16 == 0)
                 z = 0;
             else if (_z >= 0)
@@ -225,11 +246,11 @@ namespace Minicube
             else
                 z = 16 + (_z % 16);
 
-            return chunk->getBlock(glm::uvec3(x, y, z));
+            return chunk->getBlock(x, y, z);
         }
 
-        BlockMap m_blocks;
-        glm::ivec2 m_pos;
+        Block *m_blocks;
+        glm::ivec3 m_pos;
         DynamicVBO m_VBO;
         unsigned int m_VAO;
         glm::mat4 m_model = glm::mat4(1.0f);

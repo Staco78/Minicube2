@@ -3,16 +3,18 @@
 #include <map>
 #include <iostream>
 
-#include "Glm/vec2.hpp"
+#include "Glm/vec3.hpp"
 
 namespace std
 {
     template <>
-    struct less<glm::ivec2>
+    struct less<glm::ivec3>
     {
-        bool operator()(const glm::ivec2 &left, const glm::ivec2 &right) const
+        bool operator()(const glm::ivec3 &left, const glm::ivec3 &right) const
         {
-            if (left.x == right.x)
+            if (left.y == right.y && left.x == right.x)
+                return left.z < right.z;
+            else if (left.x == right.x)
                 return left.y < right.y;
             else
                 return left.x < right.x;
@@ -25,10 +27,10 @@ namespace Minicube
 
     class Chunk;
 
-    class ChunkMap : public std::map<glm::ivec2, Chunk *>
+    class ChunkMap : public std::map<glm::ivec3, Chunk *>
     {
     public:
-        Chunk *get(glm::ivec2 key)
+        Chunk *get(glm::ivec3 key)
         {
             auto it = find(key);
             if (it == end())

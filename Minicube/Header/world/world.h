@@ -19,7 +19,7 @@ namespace Minicube
         World(Camera* camera);
         void updateVisibleChunks();
         void draw(const Shader &shader);
-        Chunk *getChunk(const glm::ivec2 &pos);
+        Chunk *getChunk(const glm::ivec3 &pos);
         Block *getBlock(const glm::ivec3 &pos);
 
     private:
