@@ -2,6 +2,8 @@
 
 #include <map>
 #include <vector>
+#include <mutex>
+#include <atomic>
 
 #include "Glew/glew.h"
 
@@ -33,101 +35,6 @@ typedef struct
 {
     uint16_t id;
 } Block;
-
-namespace
-{
-
-    /*
-    side:
-    0b00000001 = back
-    0b00000010 = front
-    0b00000100 = top
-    0b00001000 = bottom
-    0b00010000 = left
-    0b00100000 = right */
-
-    void get_block_faces(const glm::uvec3 &pos, std::vector<float> *vertices, uint8_t side)
-    {
-        if (side & 0b00000001)
-        {
-            for (unsigned int i = 0; i < Minicube::Vertices::cube::back.size(); i += 5)
-            {
-                vertices->push_back(Minicube::Vertices::cube::back.at(i) + pos.x);
-                /*if (pos.x == 15)
-                    std::cout << r[i] << std::endl;*/
-                vertices->push_back(Minicube::Vertices::cube::back.at(i + 1) + pos.y);
-                vertices->push_back(Minicube::Vertices::cube::back.at(i + 2) + pos.z);
-                vertices->push_back(Minicube::Vertices::cube::back.at(i + 3));
-                vertices->push_back(Minicube::Vertices::cube::back.at(i + 4));
-            }
-        }
-        if (side & 0b00000010)
-        {
-            for (unsigned int i = 0; i < Minicube::Vertices::cube::front.size(); i += 5)
-            {
-                vertices->push_back(Minicube::Vertices::cube::front.at(i) + pos.x);
-                /*if (pos.x == 15)
-                    std::cout << r[i] << std::endl;*/
-                vertices->push_back(Minicube::Vertices::cube::front.at(i + 1) + pos.y);
-                vertices->push_back(Minicube::Vertices::cube::front.at(i + 2) + pos.z);
-                vertices->push_back(Minicube::Vertices::cube::front.at(i + 3));
-                vertices->push_back(Minicube::Vertices::cube::front.at(i + 4));
-            }
-        }
-        if (side & 0b00000100)
-        {
-            for (unsigned int i = 0; i < Minicube::Vertices::cube::top.size(); i += 5)
-            {
-                vertices->push_back(Minicube::Vertices::cube::top.at(i) + pos.x);
-                /*if (pos.x == 15)
-                    std::cout << r[i] << std::endl;*/
-                vertices->push_back(Minicube::Vertices::cube::top.at(i + 1) + pos.y);
-                vertices->push_back(Minicube::Vertices::cube::top.at(i + 2) + pos.z);
-                vertices->push_back(Minicube::Vertices::cube::top.at(i + 3));
-                vertices->push_back(Minicube::Vertices::cube::top.at(i + 4));
-            }
-        }
-        if (side & 0b00001000)
-        {
-            for (unsigned int i = 0; i < Minicube::Vertices::cube::bottom.size(); i += 5)
-            {
-                vertices->push_back(Minicube::Vertices::cube::bottom.at(i) + pos.x);
-                /*if (pos.x == 15)
-                    std::cout << r[i] << std::endl;*/
-                vertices->push_back(Minicube::Vertices::cube::bottom.at(i + 1) + pos.y);
-                vertices->push_back(Minicube::Vertices::cube::bottom.at(i + 2) + pos.z);
-                vertices->push_back(Minicube::Vertices::cube::bottom.at(i + 3));
-                vertices->push_back(Minicube::Vertices::cube::bottom.at(i + 4));
-            }
-        }
-        if (side & 0b00010000)
-        {
-            for (unsigned int i = 0; i < Minicube::Vertices::cube::left.size(); i += 5)
-            {
-                vertices->push_back(Minicube::Vertices::cube::left.at(i) + pos.x);
-                /*if (pos.x == 15)
-                    std::cout << r[i] << std::endl;*/
-                vertices->push_back(Minicube::Vertices::cube::left.at(i + 1) + pos.y);
-                vertices->push_back(Minicube::Vertices::cube::left.at(i + 2) + pos.z);
-                vertices->push_back(Minicube::Vertices::cube::left.at(i + 3));
-                vertices->push_back(Minicube::Vertices::cube::left.at(i + 4));
-            }
-        }
-        if (side & 0b00100000)
-        {
-            for (unsigned int i = 0; i < Minicube::Vertices::cube::right.size(); i += 5)
-            {
-                vertices->push_back(Minicube::Vertices::cube::right.at(i) + pos.x);
-                /*if (pos.x == 15)
-                    std::cout << r[i] << std::endl;*/
-                vertices->push_back(Minicube::Vertices::cube::right.at(i + 1) + pos.y);
-                vertices->push_back(Minicube::Vertices::cube::right.at(i + 2) + pos.z);
-                vertices->push_back(Minicube::Vertices::cube::right.at(i + 3));
-                vertices->push_back(Minicube::Vertices::cube::right.at(i + 4));
-            }
-        }
-    }
-}
 
 namespace Minicube
 {
@@ -164,18 +71,38 @@ namespace Minicube
         }
         void sendData()
         {
+            std::cout << "send data\n";
+            m_mutex.lock();
             glBindBuffer(GL_ARRAY_BUFFER, ID);
             glBufferData(GL_ARRAY_BUFFER, m_data.size() * sizeof(float), m_data.data(), GL_DYNAMIC_DRAW);
+            m_mutex.unlock();
+        }
+        void push_back(float data)
+        {
+            m_mutex.lock();
+            m_data.push_back(data);
+            m_mutex.unlock();
         }
         int getSize()
         {
+            std::lock_guard<std::mutex> lock(m_mutex);
             return m_data.size();
         }
+        void lock()
+        {
+            m_mutex.lock();
+        }
+        void unlock()
+        {
+            m_mutex.unlock();
+        }
+
         unsigned int getTrianglesCount() { return (getSize() / 5); }
         unsigned int getID() { return ID; }
         std::vector<float> *getData() { return &m_data; }
 
     private:
+        std::mutex m_mutex;
         unsigned int ID;
         std::vector<float> m_data;
     };
@@ -186,15 +113,22 @@ namespace Minicube
         Chunk(ChunkMap *chunkMap, glm::ivec3 pos);
         ~Chunk()
         {
+            while (m_state == 2)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
+            m_state = -1;
+
             free(m_blocks);
             std::cout << "chunk destructed\n";
         }
-        void draw(const Shader &shader, int &isVBOConstructable);
+        void draw(const Shader &shader);
         void addBlock(int x, int y, int z, Block &block);
         void constructVBO();
         Block *getBlock(int x, int y, int z);
         glm::ivec3 getPos()
         {
+            std::lock_guard<std::mutex> lock(m_blocks_mutex);
             return m_pos;
         }
 
@@ -214,11 +148,13 @@ namespace Minicube
         {
 
             if (!(x < 0 || y < 0 || z < 0 || x > 15 || y > 15 || z > 15))
-                return &m_blocks[getBlockIndex(x, y, z)];
+                return getBlock(x, y, z);
 
+            m_blocks_mutex.lock();
             int _x = x + m_pos.x * 16;
             int _y = y + m_pos.y * 16;
             int _z = z + m_pos.z * 16;
+            m_blocks_mutex.unlock();
 
             Chunk *chunk = m_chunkMap->get(glm::ivec3(floor(_x / 16.0), floor(_y / 16.0), floor(_z / 16.0)));
 
@@ -255,7 +191,93 @@ namespace Minicube
         unsigned int m_VAO;
         glm::mat4 m_model = glm::mat4(1.0f);
         ChunkMap *m_chunkMap = nullptr;
-        bool m_isVBOConstructed = false;
+
+        std::mutex m_blocks_mutex;
+        std::atomic_int m_state = 0;
     };
 
 } // namespace Minicube
+
+namespace
+{
+
+    /*
+    side:
+    0b00000001 = back
+    0b00000010 = front
+    0b00000100 = top
+    0b00001000 = bottom
+    0b00010000 = left
+    0b00100000 = right */
+
+    void get_block_faces(const glm::uvec3 &pos, Minicube::DynamicVBO &VBO, uint8_t side)
+    {
+
+        if (side & 0b00000001)
+        {
+            for (unsigned int i = 0; i < Minicube::Vertices::cube::back.size(); i += 5)
+            {
+                VBO.push_back(Minicube::Vertices::cube::back.at(i) + pos.x);
+                VBO.push_back(Minicube::Vertices::cube::back.at(i + 1) + pos.y);
+                VBO.push_back(Minicube::Vertices::cube::back.at(i + 2) + pos.z);
+                VBO.push_back(Minicube::Vertices::cube::back.at(i + 3));
+                VBO.push_back(Minicube::Vertices::cube::back.at(i + 4));
+            }
+        }
+        if (side & 0b00000010)
+        {
+            for (unsigned int i = 0; i < Minicube::Vertices::cube::front.size(); i += 5)
+            {
+                VBO.push_back(Minicube::Vertices::cube::front.at(i) + pos.x);
+                VBO.push_back(Minicube::Vertices::cube::front.at(i + 1) + pos.y);
+                VBO.push_back(Minicube::Vertices::cube::front.at(i + 2) + pos.z);
+                VBO.push_back(Minicube::Vertices::cube::front.at(i + 3));
+                VBO.push_back(Minicube::Vertices::cube::front.at(i + 4));
+            }
+        }
+        if (side & 0b00000100)
+        {
+            for (unsigned int i = 0; i < Minicube::Vertices::cube::top.size(); i += 5)
+            {
+                VBO.push_back(Minicube::Vertices::cube::top.at(i) + pos.x);
+                VBO.push_back(Minicube::Vertices::cube::top.at(i + 1) + pos.y);
+                VBO.push_back(Minicube::Vertices::cube::top.at(i + 2) + pos.z);
+                VBO.push_back(Minicube::Vertices::cube::top.at(i + 3));
+                VBO.push_back(Minicube::Vertices::cube::top.at(i + 4));
+            }
+        }
+        if (side & 0b00001000)
+        {
+            for (unsigned int i = 0; i < Minicube::Vertices::cube::bottom.size(); i += 5)
+            {
+                VBO.push_back(Minicube::Vertices::cube::bottom.at(i) + pos.x);
+                VBO.push_back(Minicube::Vertices::cube::bottom.at(i + 1) + pos.y);
+                VBO.push_back(Minicube::Vertices::cube::bottom.at(i + 2) + pos.z);
+                VBO.push_back(Minicube::Vertices::cube::bottom.at(i + 3));
+                VBO.push_back(Minicube::Vertices::cube::bottom.at(i + 4));
+            }
+        }
+        if (side & 0b00010000)
+        {
+            for (unsigned int i = 0; i < Minicube::Vertices::cube::left.size(); i += 5)
+            {
+                VBO.push_back(Minicube::Vertices::cube::left.at(i) + pos.x);
+                VBO.push_back(Minicube::Vertices::cube::left.at(i + 1) + pos.y);
+                VBO.push_back(Minicube::Vertices::cube::left.at(i + 2) + pos.z);
+                VBO.push_back(Minicube::Vertices::cube::left.at(i + 3));
+                VBO.push_back(Minicube::Vertices::cube::left.at(i + 4));
+            }
+        }
+        if (side & 0b00100000)
+        {
+            for (unsigned int i = 0; i < Minicube::Vertices::cube::right.size(); i += 5)
+            {
+                VBO.push_back(Minicube::Vertices::cube::right.at(i) + pos.x);
+                VBO.push_back(Minicube::Vertices::cube::right.at(i + 1) + pos.y);
+                VBO.push_back(Minicube::Vertices::cube::right.at(i + 2) + pos.z);
+                VBO.push_back(Minicube::Vertices::cube::right.at(i + 3));
+                VBO.push_back(Minicube::Vertices::cube::right.at(i + 4));
+            }
+        }
+    }
+}

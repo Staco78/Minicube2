@@ -7,7 +7,7 @@ namespace Minicube
         m_camera = camera;
     }
 
-    bool isVisible(const glm::ivec3 &chunkPos, const glm::ivec3 &playerChunkPos, int renderDistance)
+    inline bool isVisible(const glm::ivec3 &chunkPos, const glm::ivec3 &playerChunkPos, int renderDistance)
     {
         return chunkPos.x >= playerChunkPos.x - renderDistance && chunkPos.x <= playerChunkPos.x + renderDistance &&
                chunkPos.z >= playerChunkPos.z - renderDistance && chunkPos.z <= playerChunkPos.z + renderDistance;
@@ -31,16 +31,17 @@ namespace Minicube
 
         for (int x = playerChunkPos.x - m_renderDistance; x <= playerChunkPos.x + m_renderDistance; x++)
         {
-            for (int y = 0; y <= 5; y++)
+            for (int y = 0; y < 10; y++)
             {
                 for (int z = playerChunkPos.z - m_renderDistance; z <= playerChunkPos.z + m_renderDistance; z++)
                 {
                     glm::ivec3 pos(x, y, z);
                     if (getChunk(pos) == nullptr)
                     {
-
-                        m_chunks[pos] = new Chunk(&m_chunks, pos);
-                        m_chunks[pos]->generate();
+                        Chunk *chunk = new Chunk(&m_chunks, pos);
+                        chunk->generate();
+                        m_chunks.set(pos, chunk);
+                        m_chunksToBuild.push(chunk);
                     }
                 }
             }
@@ -49,9 +50,33 @@ namespace Minicube
 
     void World::draw(const Shader &shader)
     {
-        int VBOConstructed = 0;
+        // m_chunks.lock();
         for (auto it = m_chunks.begin(); it != m_chunks.end(); it++)
-            it->second->draw(shader, VBOConstructed);
+        {
+            it->second->draw(shader);
+        }
+        // m_chunks.unlock();
+    }
+
+    void World::updateChunksThread()
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        while (true)
+        {
+            while (!m_chunksToBuild.empty())
+            {
+                // std::cout << "Popping" << std::endl;
+                m_chunksToBuild.pop()->constructVBO();
+            }
+            // std::cout << "Sleepping" << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+
+    void World::startThreads()
+    {
+        std::thread updateChunksThread(&World::updateChunksThread, this);
+        updateChunksThread.detach();
     }
 
     Chunk *World::getChunk(const glm::ivec3 &pos)
