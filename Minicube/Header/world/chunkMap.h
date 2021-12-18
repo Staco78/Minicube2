@@ -51,6 +51,14 @@ namespace Minicube
             m_mutex.unlock();
         }
 
+        unsigned int size()
+        {
+            m_mutex.lock();
+            unsigned int ret = std::map<glm::ivec3, Chunk *>::size();
+            m_mutex.unlock();
+            return ret;
+        }
+
         void lock()
         {
             m_mutex.lock();

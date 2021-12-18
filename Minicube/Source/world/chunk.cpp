@@ -57,79 +57,57 @@ namespace Minicube
 
     void Chunk::constructVBO()
     {
-
         if (m_state != 1)
             return;
 
         m_state = 2;
 
+        glm::uvec3 pos;
+
         std::cout << "constructing VBO " << m_pos.x << " " << m_pos.y << " " << m_pos.z << "\n";
         for (int i = 0; i < 16 * 16 * 16; i++)
         {
             uint8_t side = 0;
-            glm::uvec3 pos = getBlockPos(i);
             Block *block;
+            pos = getBlockPos(i);
 
-            // std::cout << "1\n";
-            block = getBlockInWorld(pos.x + 1, pos.y, pos.z);
-            // std::cout << "2\n";
-            if (block == nullptr)
-                side |= 0b00010000;
-            // std::cout << "3\n";
+            // block = getBlockInWorld(pos.x + 1, pos.y, pos.z);
+            // if (block == nullptr || block->id == 0)
+            //     side |= 0b00010000;
 
-            // std::cout << "4\n";
-            block = getBlockInWorld(pos.x - 1, pos.y, pos.z);
-            // std::cout << "5\n";
-            if (block == nullptr)
-                side |= 0b00100000;
-            // std::cout << "6\n";
+            // block = getBlockInWorld(pos.x - 1, pos.y, pos.z);
+            // if (block == nullptr || block->id == 0)
+            //     side |= 0b00100000;
 
-            // std::cout << "7\n";
             block = getBlockInWorld(pos.x, pos.y + 1, pos.z);
-            // std::cout << "8\n";
-            if (block == nullptr)
+            if (block == nullptr || block->id == 0)
                 side |= 0b00000100;
-            // std::cout << "9\n";
 
-            // std::cout << "10\n";
             block = getBlockInWorld(pos.x, pos.y - 1, pos.z);
-            // std::cout << "11\n";
-            if (block == nullptr)
+            if (block == nullptr || block->id == 0)
                 side |= 0b00001000;
-            // std::cout << "12\n";
 
-            // std::cout << "13\n";
-            block = getBlockInWorld(pos.x, pos.y, pos.z + 1);
-            // std::cout << "14\n";
-            if (block == nullptr)
-                side |= 0b00000001;
-            // std::cout << "15\n";
+            // block = getBlockInWorld(pos.x, pos.y, pos.z + 1);
+            // if (block == nullptr || block->id == 0)
+            //     side |= 0b00000001;
 
-            // std::cout << "16\n";
-            block = getBlockInWorld(pos.x, pos.y, pos.z - 1);
-            // std::cout << "17\n";
-            if (block == nullptr)
-                side |= 0b00000010;
-            // std::cout << "18\n";
+            // block = getBlockInWorld(pos.x, pos.y, pos.z - 1);
+            // if (block == nullptr || block->id == 0)
+            //     side |= 0b00000010;
 
-            // std::cout << "19\n";
-            get_block_faces(pos, m_VBO, side);
-            // std::cout << "20\n";
+            if (side != 0)
+                get_block_faces(pos, m_VBO, side);
         }
 
-        // std::cout << "VBO constructed\n";
-
-        // m_VBO.sendData();
-
-        // std::cout << "VBO sended\n";
-
-        m_state.store(3);
+        m_state = 3;
     }
 
     Block *Chunk::getBlock(int x, int y, int z)
     {
-        std::lock_guard<std::mutex> lock(m_blocks_mutex);
-        return &m_blocks[getBlockIndex(x, y, z)];
+        m_blocks_mutex.lock();
+        Block *ret = &m_blocks[getBlockIndex(x, y, z)];
+        m_blocks_mutex.unlock();
+        return ret;
     }
 
     void Chunk::generate()
@@ -141,6 +119,6 @@ namespace Minicube
             m_blocks[i].id = 1;
         }
         m_blocks_mutex.unlock();
-        // std::cout << "chunk generated\n";
+        std::cout << "chunk generated\n";
     }
 } // namespace Minicube

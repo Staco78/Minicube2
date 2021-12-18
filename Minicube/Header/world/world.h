@@ -9,7 +9,8 @@
 #include "chunkMap.h"
 #include "chunk.h"
 #include "camera.h"
-#include "utils/multiThreadQueue.h"
+#include "utils/threadSafeQueue.h"
+#include "utils/threadSafeList.h"
 
 namespace Minicube
 {
@@ -25,8 +26,9 @@ namespace Minicube
         Block *getBlock(const glm::ivec3 &pos);
 
     private:
+        ThreadSafeQueue<Chunk *> m_chunksToBuild;
+        ThreadSafeList<Chunk *> m_chunksToRender;
         ChunkMap m_chunks;
-        MultiThreadQueue<Chunk *> m_chunksToBuild;
         Camera *m_camera = nullptr;
         void updateChunksThread();
         int m_renderDistance = 12;

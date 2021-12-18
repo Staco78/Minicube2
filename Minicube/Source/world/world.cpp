@@ -7,33 +7,48 @@ namespace Minicube
         m_camera = camera;
     }
 
-    inline bool isVisible(const glm::ivec3 &chunkPos, const glm::ivec3 &playerChunkPos, int renderDistance)
+    inline bool isVisible(const glm::ivec3 &chunkPos, int playerChunkPosX, int playerChunkPosZ, int renderDistance)
     {
-        return chunkPos.x >= playerChunkPos.x - renderDistance && chunkPos.x <= playerChunkPos.x + renderDistance &&
-               chunkPos.z >= playerChunkPos.z - renderDistance && chunkPos.z <= playerChunkPos.z + renderDistance;
+        return chunkPos.x >= playerChunkPosX - renderDistance && chunkPos.x <= playerChunkPosX + renderDistance &&
+               chunkPos.z >= playerChunkPosZ - renderDistance && chunkPos.z <= playerChunkPosZ + renderDistance;
     }
 
     void World::updateVisibleChunks()
     {
-        glm::ivec3 playerChunkPos = glm::ivec3(floor(m_camera->getPosition().x / 16.0), floor(m_camera->getPosition().y / 16.0), floor(m_camera->getPosition().z / 16.0));
+        glm::vec3 camPos = m_camera->getPosition();
+        int playerChunkPosX = int(camPos.x) / 16;
+        int playerChunkPosZ = int(camPos.z) / 16;
+        int playerChunkPosY = int(camPos.y) / 16;
 
+        m_chunks.lock();
         auto it = m_chunks.begin();
         while (it != m_chunks.end())
         {
-            if (!isVisible(it->second->getPos(), playerChunkPos, m_renderDistance))
+            if (!isVisible(it->first, playerChunkPosX, playerChunkPosZ, m_renderDistance))
             {
-                it->second->~Chunk();
-                it = m_chunks.erase(it);
+                int state = it->second->getState();
+                if (state != 2)
+                {
+                    if (state == 1)
+                        m_chunksToBuild.erase(it->second);
+                    else
+                        m_chunksToRender.erase(it->second);
+                    it->second->~Chunk();
+                    it = m_chunks.erase(it);
+                }
             }
             else
-                it++;
-        }
-
-        for (int x = playerChunkPos.x - m_renderDistance; x <= playerChunkPos.x + m_renderDistance; x++)
-        {
-            for (int y = 0; y < 10; y++)
             {
-                for (int z = playerChunkPos.z - m_renderDistance; z <= playerChunkPos.z + m_renderDistance; z++)
+                ++it;
+            }
+        }
+        m_chunks.unlock();
+
+        for (int x = playerChunkPosX - m_renderDistance; x <= playerChunkPosX + m_renderDistance; x++)
+        {
+            for (int y = 0; y < 3; y++)
+            {
+                for (int z = playerChunkPosZ - m_renderDistance; z <= playerChunkPosZ + m_renderDistance; z++)
                 {
                     glm::ivec3 pos(x, y, z);
                     if (getChunk(pos) == nullptr)
@@ -50,23 +65,24 @@ namespace Minicube
 
     void World::draw(const Shader &shader)
     {
-        // m_chunks.lock();
-        for (auto it = m_chunks.begin(); it != m_chunks.end(); it++)
+        unsigned int size = m_chunksToRender.size();
+        for (unsigned int i = 0; i < size; i++)
         {
-            it->second->draw(shader);
+            m_chunksToRender.get(i)->draw(shader);
         }
-        // m_chunks.unlock();
     }
 
     void World::updateChunksThread()
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        // std::this_thread::sleep_for(std::chrono::milliseconds(100));
         while (true)
         {
             while (!m_chunksToBuild.empty())
             {
                 // std::cout << "Popping" << std::endl;
-                m_chunksToBuild.pop()->constructVBO();
+                Chunk *chunk = m_chunksToBuild.pop();
+                chunk->constructVBO();
+                m_chunksToRender.push(chunk);
             }
             // std::cout << "Sleepping" << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(100));

@@ -2,6 +2,7 @@
 
 #include <map>
 #include <vector>
+#include <thread>
 #include <mutex>
 #include <atomic>
 
@@ -14,22 +15,22 @@
 #include "shader.h"
 #include "utils.h"
 
-namespace std
-{
-    template <>
-    struct less<glm::uvec3>
-    {
-        bool operator()(const glm::uvec3 &left, const glm::uvec3 &right) const
-        {
-            if (left.y == right.y && left.x == right.x)
-                return left.z < right.z;
-            else if (left.x == right.x)
-                return left.y < right.y;
-            else
-                return left.x < right.x;
-        }
-    };
-}
+// namespace std
+// {
+//     template <>
+//     struct less<glm::uvec3>
+//     {
+//         bool operator()(const glm::uvec3 &left, const glm::uvec3 &right) const
+//         {
+//             if (left.y == right.y && left.x == right.x)
+//                 return left.z < right.z;
+//             else if (left.x == right.x)
+//                 return left.y < right.y;
+//             else
+//                 return left.x < right.x;
+//         }
+//     };
+// }
 
 typedef struct
 {
@@ -71,7 +72,7 @@ namespace Minicube
         }
         void sendData()
         {
-            std::cout << "send data\n";
+            // std::cout << "send data\n";
             m_mutex.lock();
             glBindBuffer(GL_ARRAY_BUFFER, ID);
             glBufferData(GL_ARRAY_BUFFER, m_data.size() * sizeof(float), m_data.data(), GL_DYNAMIC_DRAW);
@@ -115,7 +116,6 @@ namespace Minicube
         {
             while (m_state == 2)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
             m_state = -1;
 
@@ -134,6 +134,11 @@ namespace Minicube
 
         void generate();
 
+        int getState()
+        {
+            return m_state;
+        }
+
     private:
         inline int getBlockIndex(int x, int y, int z)
         {
@@ -150,11 +155,9 @@ namespace Minicube
             if (!(x < 0 || y < 0 || z < 0 || x > 15 || y > 15 || z > 15))
                 return getBlock(x, y, z);
 
-            m_blocks_mutex.lock();
             int _x = x + m_pos.x * 16;
             int _y = y + m_pos.y * 16;
             int _z = z + m_pos.z * 16;
-            m_blocks_mutex.unlock();
 
             Chunk *chunk = m_chunkMap->get(glm::ivec3(floor(_x / 16.0), floor(_y / 16.0), floor(_z / 16.0)));
 
