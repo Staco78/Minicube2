@@ -45,14 +45,14 @@ namespace Minicube
         T pop()
         {
             m_mutex.lock();
-            T data = m_list.back();
-            m_list.pop_back();
+            T data = m_list.front();
+            m_list.pop_front();
             m_mutex.unlock();
             return data;
         }
 
     private:
-        std::vector<T> m_list;
+        std::deque<T> m_list;
         std::mutex m_mutex;
     };
 } // namespace Minicube

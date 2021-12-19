@@ -23,7 +23,7 @@ namespace Minicube
         if (pos.x != 0 || pos.y != 0 || pos.z != 0)
             m_model = glm::translate(m_model, glm::vec3(pos.x * 16, pos.y * 16, pos.z * 16));
 
-        m_state.store(1);
+        m_state = 1;
         // std::cout << "chunk constructed\n";
     }
 
@@ -71,13 +71,13 @@ namespace Minicube
             Block *block;
             pos = getBlockPos(i);
 
-            // block = getBlockInWorld(pos.x + 1, pos.y, pos.z);
-            // if (block == nullptr || block->id == 0)
-            //     side |= 0b00010000;
+            block = getBlockInWorld(pos.x + 1, pos.y, pos.z);
+            if (block == nullptr || block->id == 0)
+                side |= 0b00010000;
 
-            // block = getBlockInWorld(pos.x - 1, pos.y, pos.z);
-            // if (block == nullptr || block->id == 0)
-            //     side |= 0b00100000;
+            block = getBlockInWorld(pos.x - 1, pos.y, pos.z);
+            if (block == nullptr || block->id == 0)
+                side |= 0b00100000;
 
             block = getBlockInWorld(pos.x, pos.y + 1, pos.z);
             if (block == nullptr || block->id == 0)
@@ -87,13 +87,13 @@ namespace Minicube
             if (block == nullptr || block->id == 0)
                 side |= 0b00001000;
 
-            // block = getBlockInWorld(pos.x, pos.y, pos.z + 1);
-            // if (block == nullptr || block->id == 0)
-            //     side |= 0b00000001;
+            block = getBlockInWorld(pos.x, pos.y, pos.z + 1);
+            if (block == nullptr || block->id == 0)
+                side |= 0b00000001;
 
-            // block = getBlockInWorld(pos.x, pos.y, pos.z - 1);
-            // if (block == nullptr || block->id == 0)
-            //     side |= 0b00000010;
+            block = getBlockInWorld(pos.x, pos.y, pos.z - 1);
+            if (block == nullptr || block->id == 0)
+                side |= 0b00000010;
 
             if (side != 0)
                 get_block_faces(pos, m_VBO, side);

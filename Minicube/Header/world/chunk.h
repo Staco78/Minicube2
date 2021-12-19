@@ -15,23 +15,6 @@
 #include "shader.h"
 #include "utils.h"
 
-// namespace std
-// {
-//     template <>
-//     struct less<glm::uvec3>
-//     {
-//         bool operator()(const glm::uvec3 &left, const glm::uvec3 &right) const
-//         {
-//             if (left.y == right.y && left.x == right.x)
-//                 return left.z < right.z;
-//             else if (left.x == right.x)
-//                 return left.y < right.y;
-//             else
-//                 return left.x < right.x;
-//         }
-//     };
-// }
-
 typedef struct
 {
     uint16_t id;
@@ -39,29 +22,6 @@ typedef struct
 
 namespace Minicube
 {
-
-    // class BlockMap : public std::map<glm::uvec3, Block *>
-    // {
-    // public:
-    //     Block *get(glm::ivec3 pos)
-    //     {
-
-    //         if (pos.x < 0 || pos.y < 0 || pos.z < 0 || pos.x > 15 || pos.y > 15 || pos.z > 15)
-    //             return nullptr;
-
-    //         auto it = find(pos);
-    //         if (it == end())
-    //             return nullptr;
-    //         return it->second;
-    //     }
-
-    //     ~BlockMap()
-    //     {
-
-    //         // for (auto it = this->begin(); it != this->end(); it++)
-    //         //     free(it->second);
-    //     }
-    // };
 
     class DynamicVBO
     {

@@ -46,9 +46,9 @@ namespace Minicube
 
         for (int x = playerChunkPosX - m_renderDistance; x <= playerChunkPosX + m_renderDistance; x++)
         {
-            for (int y = 0; y < 3; y++)
+            for (int z = playerChunkPosZ - m_renderDistance; z <= playerChunkPosZ + m_renderDistance; z++)
             {
-                for (int z = playerChunkPosZ - m_renderDistance; z <= playerChunkPosZ + m_renderDistance; z++)
+                for (int y = 0; y < 2; y++)
                 {
                     glm::ivec3 pos(x, y, z);
                     if (getChunk(pos) == nullptr)
@@ -74,17 +74,14 @@ namespace Minicube
 
     void World::updateChunksThread()
     {
-        // std::this_thread::sleep_for(std::chrono::milliseconds(100));
         while (true)
         {
             while (!m_chunksToBuild.empty())
             {
-                // std::cout << "Popping" << std::endl;
                 Chunk *chunk = m_chunksToBuild.pop();
                 chunk->constructVBO();
                 m_chunksToRender.push(chunk);
             }
-            // std::cout << "Sleepping" << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
