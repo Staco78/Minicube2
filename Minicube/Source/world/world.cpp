@@ -36,11 +36,11 @@ namespace Minicube
                     it->second->~Chunk();
                     it = m_chunks.erase(it);
                 }
+                else
+                    it++;
             }
             else
-            {
-                ++it;
-            }
+                it++;
         }
         m_chunks.unlock();
 
@@ -48,7 +48,7 @@ namespace Minicube
         {
             for (int z = playerChunkPosZ - m_renderDistance; z <= playerChunkPosZ + m_renderDistance; z++)
             {
-                for (int y = 0; y < 2; y++)
+                for (int y = 0; y < 5; y++)
                 {
                     glm::ivec3 pos(x, y, z);
                     if (getChunk(pos) == nullptr)

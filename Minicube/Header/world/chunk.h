@@ -32,7 +32,6 @@ namespace Minicube
         }
         void sendData()
         {
-            // std::cout << "send data\n";
             m_mutex.lock();
             glBindBuffer(GL_ARRAY_BUFFER, ID);
             glBufferData(GL_ARRAY_BUFFER, m_data.size() * sizeof(float), m_data.data(), GL_DYNAMIC_DRAW);
@@ -48,14 +47,6 @@ namespace Minicube
         {
             std::lock_guard<std::mutex> lock(m_mutex);
             return m_data.size();
-        }
-        void lock()
-        {
-            m_mutex.lock();
-        }
-        void unlock()
-        {
-            m_mutex.unlock();
         }
 
         unsigned int getTrianglesCount() { return (getSize() / 5); }
