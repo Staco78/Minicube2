@@ -46,6 +46,8 @@ namespace Minicube
         m_camera = camera;
         m_world = world;
 
+        Textures::init();
+
         text::init();
         text::setProjection(glm::ortho(0.0f, float(m_window.getSize().x), 0.0f, float(m_window.getSize().y)));
     }
@@ -91,8 +93,6 @@ namespace Minicube
 
         if (debugTimer > 0)
             debugTimer--;
-
-
 
         //
         //

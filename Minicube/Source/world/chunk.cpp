@@ -11,11 +11,14 @@ namespace Minicube
         glBindVertexArray(m_VAO);
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO.getID());
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
         glEnableVertexAttribArray(0);
 
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
         glEnableVertexAttribArray(1);
+
+        glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(5 * sizeof(float)));
+        glEnableVertexAttribArray(2);
 
         if (pos.x != 0 || pos.y != 0 || pos.z != 0)
             m_model = glm::translate(m_model, glm::vec3(pos.x * 16, pos.y * 16, pos.z * 16));
@@ -37,6 +40,7 @@ namespace Minicube
             shader.use();
             shader.setMat4("model", m_model);
             glBindVertexArray(m_VAO);
+            glBindTexture(GL_TEXTURE_2D_ARRAY, Textures::getArrayID());
             glDrawArrays(GL_TRIANGLES, 0, m_VBO.getTrianglesCount());
         }
     }
@@ -99,7 +103,7 @@ namespace Minicube
                 side |= 0b00000010;
 
             if (side != 0)
-                get_block_faces(pos, m_VBO, side);
+                get_block_faces(pos, m_VBO, side, Textures::STONE);
         }
 
         m_flags &= ~CHUNK_FLAG_NEED_REBUILD;

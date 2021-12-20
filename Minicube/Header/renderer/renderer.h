@@ -3,14 +3,11 @@
 #include <Glew/glew.h>
 
 #include "window.h"
-
 #include "shader.h"
-
 #include "camera.h"
-
 #include "world/world.h"
-
 #include "text.h"
+#include "renderer/textures.h"
 
 namespace Minicube
 {

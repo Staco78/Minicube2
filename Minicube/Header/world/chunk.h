@@ -14,6 +14,7 @@
 #include "chunkMap.h"
 #include "shader.h"
 #include "utils.h"
+#include "renderer/textures.h"
 
 typedef struct
 {
@@ -160,7 +161,7 @@ namespace
     0b00010000 = left
     0b00100000 = right */
 
-    void get_block_faces(const glm::uvec3 &pos, Minicube::DynamicVBO &VBO, uint8_t side)
+    void get_block_faces(const glm::uvec3 &pos, Minicube::DynamicVBO &VBO, uint8_t side, unsigned int textureId)
     {
 
         if (side & 0b00000001)
@@ -172,6 +173,7 @@ namespace
                 VBO.push_back(Minicube::Vertices::cube::back.at(i + 2) + pos.z);
                 VBO.push_back(Minicube::Vertices::cube::back.at(i + 3));
                 VBO.push_back(Minicube::Vertices::cube::back.at(i + 4));
+                VBO.push_back(textureId);
             }
         }
         if (side & 0b00000010)
@@ -183,6 +185,7 @@ namespace
                 VBO.push_back(Minicube::Vertices::cube::front.at(i + 2) + pos.z);
                 VBO.push_back(Minicube::Vertices::cube::front.at(i + 3));
                 VBO.push_back(Minicube::Vertices::cube::front.at(i + 4));
+                VBO.push_back(textureId);
             }
         }
         if (side & 0b00000100)
@@ -194,6 +197,7 @@ namespace
                 VBO.push_back(Minicube::Vertices::cube::top.at(i + 2) + pos.z);
                 VBO.push_back(Minicube::Vertices::cube::top.at(i + 3));
                 VBO.push_back(Minicube::Vertices::cube::top.at(i + 4));
+                VBO.push_back(textureId);
             }
         }
         if (side & 0b00001000)
@@ -205,6 +209,7 @@ namespace
                 VBO.push_back(Minicube::Vertices::cube::bottom.at(i + 2) + pos.z);
                 VBO.push_back(Minicube::Vertices::cube::bottom.at(i + 3));
                 VBO.push_back(Minicube::Vertices::cube::bottom.at(i + 4));
+                VBO.push_back(textureId);
             }
         }
         if (side & 0b00010000)
@@ -216,6 +221,7 @@ namespace
                 VBO.push_back(Minicube::Vertices::cube::left.at(i + 2) + pos.z);
                 VBO.push_back(Minicube::Vertices::cube::left.at(i + 3));
                 VBO.push_back(Minicube::Vertices::cube::left.at(i + 4));
+                VBO.push_back(textureId);
             }
         }
         if (side & 0b00100000)
@@ -227,6 +233,7 @@ namespace
                 VBO.push_back(Minicube::Vertices::cube::right.at(i + 2) + pos.z);
                 VBO.push_back(Minicube::Vertices::cube::right.at(i + 3));
                 VBO.push_back(Minicube::Vertices::cube::right.at(i + 4));
+                VBO.push_back(textureId);
             }
         }
     }
