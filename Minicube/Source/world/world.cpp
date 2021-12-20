@@ -26,14 +26,10 @@ namespace Minicube
         {
             if (!isVisible(it->first, playerChunkPosX, playerChunkPosZ, m_renderDistance))
             {
-                int state = it->second->getState();
-                if (state != 2)
+                ChunkState state = it->second->getState();
+                if (state != CHUNK_STATE_LOADING)
                 {
-                    if (state == 1)
-                        m_chunksToBuild.erase(it->second);
-                    else
-                        m_chunksToRender.erase(it->second);
-                    it->second->~Chunk();
+                    delete it->second;
                     it = m_chunks.erase(it);
                 }
                 else
@@ -56,7 +52,6 @@ namespace Minicube
                         Chunk *chunk = new Chunk(&m_chunks, pos);
                         chunk->generate();
                         m_chunks.set(pos, chunk);
-                        m_chunksToBuild.push(chunk);
                     }
                 }
             }
@@ -65,23 +60,29 @@ namespace Minicube
 
     void World::draw(const Shader &shader)
     {
-        unsigned int size = m_chunksToRender.size();
-        for (unsigned int i = 0; i < size; i++)
+        m_chunks.lock();
+        for (auto &chunk : m_chunks)
         {
-            m_chunksToRender.get(i)->draw(shader);
+            chunk.second->draw(shader);
         }
+        m_chunks.unlock();
     }
 
     void World::updateChunksThread()
     {
         while (true)
         {
-            while (!m_chunksToBuild.empty())
+            m_chunks.lock();
+            for (auto &chunk : m_chunks)
             {
-                Chunk *chunk = m_chunksToBuild.pop();
-                chunk->constructVBO();
-                m_chunksToRender.push(chunk);
+                if (chunk.second->getFlags() & CHUNK_FLAG_NEED_REBUILD)
+                {
+                    m_chunks.unlock();
+                    chunk.second->build();
+                    m_chunks.lock();
+                }
             }
+            m_chunks.unlock();
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
@@ -92,42 +93,42 @@ namespace Minicube
         updateChunksThread.detach();
     }
 
-    Chunk *World::getChunk(const glm::ivec3 &pos)
+    inline Chunk *World::getChunk(const glm::ivec3 &pos)
     {
         return m_chunks.get(pos);
     }
 
-    Block *World::getBlock(const glm::ivec3 &pos)
+    Block *World::getBlock(int x, int y, int z)
     {
 
-        Chunk *chunk = m_chunks.get(glm::ivec3(floor(pos.x / 16.0), floor(pos.y / 16.0), floor(pos.z / 16.0)));
+        Chunk *chunk = getChunk(glm::ivec3(x / 16, y / 16, z / 16));
 
-        int x;
-        int y;
-        int z;
+        int _x;
+        int _y;
+        int _z;
 
-        if (pos.x % 16 == 0)
-            x = 0;
-        else if (pos.x >= 0)
-            x = pos.x % 16;
+        if (x % 16 == 0)
+            _x = 0;
+        else if (x >= 0)
+            _x = x % 16;
         else
-            x = 16 + (pos.x % 16);
+            _x = 16 + (x % 16);
 
-        if (pos.y % 16 == 0)
-            y = 0;
-        else if (pos.y >= 0)
-            y = pos.y % 16;
+        if (y % 16 == 0)
+            _y = 0;
+        else if (y >= 0)
+            _y = y % 16;
         else
-            y = 16 + (pos.y % 16);
+            _y = 16 + (y % 16);
 
-        if (pos.z % 16 == 0)
-            z = 0;
-        else if (pos.z >= 0)
-            z = pos.z % 16;
+        if (z % 16 == 0)
+            _z = 0;
+        else if (z >= 0)
+            _z = z % 16;
         else
-            z = 16 + (pos.z % 16);
+            _z = 16 + (z % 16);
 
-        return chunk->getBlock(x, y, z);
+        return chunk->getBlock(_x, _y, _z);
     }
 
 } // namespace Minicube

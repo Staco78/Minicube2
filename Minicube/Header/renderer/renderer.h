@@ -26,11 +26,14 @@ namespace Minicube
         Shader m_shader;
         Camera *m_camera;
         World *m_world;
+
         double frameTime;
         double lastFrame = glfwGetTime();
-        int lineModeTimer = 0;
         int debugTimer = 0;
-        bool lineMode = true;
         int fps = 0;
+#ifdef _DEBUG
+        int lineModeTimer = 0;
+        bool lineMode = true;
+#endif
     };
 }

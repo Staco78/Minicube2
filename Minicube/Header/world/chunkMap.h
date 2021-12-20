@@ -13,10 +13,10 @@ namespace std
     {
         bool operator()(const glm::ivec3 &left, const glm::ivec3 &right) const
         {
-            if (left.y == right.y && left.x == right.x)
-                return left.z < right.z;
-            else if (left.x == right.x)
+            if (left.z == right.z && left.x == right.x)
                 return left.y < right.y;
+            else if (left.x == right.x)
+                return left.z < right.z;
             else
                 return left.x < right.x;
         }

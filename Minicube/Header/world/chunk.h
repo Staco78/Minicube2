@@ -49,6 +49,13 @@ namespace Minicube
             return m_data.size();
         }
 
+        void clear()
+        {
+            m_mutex.lock();
+            m_data.clear();
+            m_mutex.unlock();
+        }
+
         unsigned int getTrianglesCount() { return (getSize() / 5); }
         unsigned int getID() { return ID; }
         std::vector<float> *getData() { return &m_data; }
@@ -59,23 +66,38 @@ namespace Minicube
         std::vector<float> m_data;
     };
 
+    enum ChunkState
+    {
+        CHUNK_STATE_DESTROYING = -1,
+        CHUNK_STATE_0,
+        CHUNK_STATE_UNLOADED,
+        CHUNK_STATE_LOADING,
+        CHUNK_STATE_LOADED,
+        CHUNK_STATE_IDLE,
+    };
+
+    enum ChunkFlags
+    {
+        CHUNK_FLAG_NONE = 0,
+        CHUNK_FLAG_NEED_REBUILD = 1
+    };
+
     class Chunk
     {
     public:
         Chunk(ChunkMap *chunkMap, glm::ivec3 pos);
         ~Chunk()
         {
-            while (m_state == 2)
+            while (m_state == CHUNK_STATE_LOADING)
             {
             }
-            m_state = -1;
+            m_state = CHUNK_STATE_DESTROYING;
 
             free(m_blocks);
             std::cout << "chunk destructed\n";
         }
         void draw(const Shader &shader);
         void addBlock(int x, int y, int z, Block &block);
-        void constructVBO();
         Block *getBlock(int x, int y, int z);
         glm::ivec3 getPos()
         {
@@ -85,59 +107,32 @@ namespace Minicube
 
         void generate();
 
-        int getState()
+        ChunkState getState()
         {
             return m_state;
         }
 
+        std::atomic<int> &getFlags()
+        {
+            return m_flags;
+        }
+
+        void build();
+
     private:
+        void constructVBO();
+
         inline int getBlockIndex(int x, int y, int z)
         {
             return (x + y * 16 + z * 256);
         }
+
         inline glm::uvec3 getBlockPos(int index)
         {
             return glm::uvec3(index % 16, index / 16 % 16, index / 256);
         }
 
-        Block *getBlockInWorld(int x, int y, int z)
-        {
-
-            if (!(x < 0 || y < 0 || z < 0 || x > 15 || y > 15 || z > 15))
-                return getBlock(x, y, z);
-
-            int _x = x + m_pos.x * 16;
-            int _y = y + m_pos.y * 16;
-            int _z = z + m_pos.z * 16;
-
-            Chunk *chunk = m_chunkMap->get(glm::ivec3(floor(_x / 16.0), floor(_y / 16.0), floor(_z / 16.0)));
-
-            if (chunk == nullptr)
-                return nullptr;
-
-            if (_x % 16 == 0)
-                x = 0;
-            else if (_x >= 0)
-                x = _x % 16;
-            else
-                x = 16 + (_x % 16);
-
-            if (_y % 16 == 0)
-                y = 0;
-            else if (_y >= 0)
-                y = _y % 16;
-            else
-                y = 16 + (_y % 16);
-
-            if (_z % 16 == 0)
-                z = 0;
-            else if (_z >= 0)
-                z = _z % 16;
-            else
-                z = 16 + (_z % 16);
-
-            return chunk->getBlock(x, y, z);
-        }
+        Block *getBlockInWorld(int x, int y, int z);
 
         Block *m_blocks;
         glm::ivec3 m_pos;
@@ -147,7 +142,8 @@ namespace Minicube
         ChunkMap *m_chunkMap = nullptr;
 
         std::mutex m_blocks_mutex;
-        std::atomic_int m_state = 0;
+        std::atomic<ChunkState> m_state = CHUNK_STATE_0;
+        std::atomic<int> m_flags = CHUNK_FLAG_NONE;
     };
 
 } // namespace Minicube

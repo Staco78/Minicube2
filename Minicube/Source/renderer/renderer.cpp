@@ -53,11 +53,11 @@ namespace Minicube
     void Renderer::render()
     {
 
-        // debug
         double now = glfwGetTime();
         frameTime = now - lastFrame;
         lastFrame = now;
 
+#ifdef _DEBUG
         glfwSetInputMode(getWindow()->getWindow(), GLFW_STICKY_KEYS, GL_FALSE);
 
         if (lineModeTimer == 0)
@@ -71,17 +71,8 @@ namespace Minicube
             // std::cout << 1.0f / frameTime << std::endl;
         }
 
-        if (debugTimer == 0)
-        {
-            fps = int(1.0f / frameTime);
-            debugTimer = 20;
-        }
-
         if (lineModeTimer > 0)
             lineModeTimer--;
-
-        if (debugTimer > 0)
-            debugTimer--;
 
         glfwSetInputMode(getWindow()->getWindow(), GLFW_STICKY_KEYS, GL_TRUE);
 
@@ -89,6 +80,19 @@ namespace Minicube
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         else
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+#endif
+
+        if (debugTimer == 0)
+        {
+            fps = int(1.0f / frameTime);
+            debugTimer = 20;
+        }
+
+        if (debugTimer > 0)
+            debugTimer--;
+
+
 
         //
         //
