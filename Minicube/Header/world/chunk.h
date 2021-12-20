@@ -21,6 +21,13 @@ typedef struct
     uint16_t id;
 } Block;
 
+enum class BLockType
+{
+    AIR,
+    GRASS,
+    STONE
+};
+
 namespace Minicube
 {
 
@@ -100,20 +107,19 @@ namespace Minicube
         void draw(const Shader &shader);
         void addBlock(int x, int y, int z, Block &block);
         Block *getBlock(int x, int y, int z);
-        glm::ivec3 getPos()
+        inline glm::ivec3 getPos()
         {
-            std::lock_guard<std::mutex> lock(m_blocks_mutex);
             return m_pos;
         }
 
         void generate();
 
-        ChunkState getState()
+        inline ChunkState getState()
         {
             return m_state;
         }
 
-        std::atomic<int> &getFlags()
+        inline std::atomic<int> &getFlags()
         {
             return m_flags;
         }
@@ -142,7 +148,6 @@ namespace Minicube
         glm::mat4 m_model = glm::mat4(1.0f);
         ChunkMap *m_chunkMap = nullptr;
 
-        std::mutex m_blocks_mutex;
         std::atomic<ChunkState> m_state = CHUNK_STATE_0;
         std::atomic<int> m_flags = CHUNK_FLAG_NONE;
     };
@@ -152,19 +157,20 @@ namespace Minicube
 namespace
 {
 
-    /*
-    side:
-    0b00000001 = back
-    0b00000010 = front
-    0b00000100 = top
-    0b00001000 = bottom
-    0b00010000 = left
-    0b00100000 = right */
+    enum Side
+    {
+        BACK = 0b00000001,
+        FRONT = 0b00000010,
+        TOP = 0b00000100,
+        BOTTOM = 0b00001000,
+        LEFT = 0b00010000,
+        RIGHT = 0b00100000
+    };
 
-    void get_block_faces(const glm::uvec3 &pos, Minicube::DynamicVBO &VBO, uint8_t side, unsigned int textureId)
+    void get_block_faces(const glm::uvec3 &pos, Minicube::DynamicVBO &VBO, Side side, unsigned int textureId)
     {
 
-        if (side & 0b00000001)
+        if (side & BACK)
         {
             for (unsigned int i = 0; i < Minicube::Vertices::cube::back.size(); i += 5)
             {
@@ -176,7 +182,7 @@ namespace
                 VBO.push_back(textureId);
             }
         }
-        if (side & 0b00000010)
+        if (side & FRONT)
         {
             for (unsigned int i = 0; i < Minicube::Vertices::cube::front.size(); i += 5)
             {
@@ -188,7 +194,7 @@ namespace
                 VBO.push_back(textureId);
             }
         }
-        if (side & 0b00000100)
+        if (side & TOP)
         {
             for (unsigned int i = 0; i < Minicube::Vertices::cube::top.size(); i += 5)
             {
@@ -200,7 +206,7 @@ namespace
                 VBO.push_back(textureId);
             }
         }
-        if (side & 0b00001000)
+        if (side & BOTTOM)
         {
             for (unsigned int i = 0; i < Minicube::Vertices::cube::bottom.size(); i += 5)
             {
@@ -212,7 +218,7 @@ namespace
                 VBO.push_back(textureId);
             }
         }
-        if (side & 0b00010000)
+        if (side & LEFT)
         {
             for (unsigned int i = 0; i < Minicube::Vertices::cube::left.size(); i += 5)
             {
@@ -224,7 +230,7 @@ namespace
                 VBO.push_back(textureId);
             }
         }
-        if (side & 0b00100000)
+        if (side & RIGHT)
         {
             for (unsigned int i = 0; i < Minicube::Vertices::cube::right.size(); i += 5)
             {

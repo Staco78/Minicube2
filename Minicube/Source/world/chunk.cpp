@@ -45,11 +45,9 @@ namespace Minicube
         }
     }
 
-    void Chunk::addBlock(int x, int y, int z, Block &block)
+    inline void Chunk::addBlock(int x, int y, int z, Block &block)
     {
-        m_blocks_mutex.lock();
         m_blocks[getBlockIndex(x, y, z)] = block;
-        m_blocks_mutex.unlock();
     }
 
     void Chunk::build()
@@ -74,36 +72,39 @@ namespace Minicube
         glm::uvec3 pos;
         for (int i = 0; i < 16 * 16 * 16; i++)
         {
-            uint8_t side = 0;
+            if (m_blocks[i].id == 0)
+                continue;
+
+            int side = 0;
             Block *block;
             pos = getBlockPos(i);
 
-            block = getBlockInWorld(pos.x + 1, pos.y, pos.z);
-            if (block == nullptr || block->id == 0)
-                side |= 0b00010000;
-
-            block = getBlockInWorld(pos.x - 1, pos.y, pos.z);
-            if (block == nullptr || block->id == 0)
-                side |= 0b00100000;
-
-            block = getBlockInWorld(pos.x, pos.y + 1, pos.z);
-            if (block == nullptr || block->id == 0)
-                side |= 0b00000100;
-
-            block = getBlockInWorld(pos.x, pos.y - 1, pos.z);
-            if (block == nullptr || block->id == 0)
-                side |= 0b00001000;
-
             block = getBlockInWorld(pos.x, pos.y, pos.z + 1);
             if (block == nullptr || block->id == 0)
-                side |= 0b00000001;
+                side |= BACK;
 
             block = getBlockInWorld(pos.x, pos.y, pos.z - 1);
             if (block == nullptr || block->id == 0)
-                side |= 0b00000010;
+                side |= FRONT;
+
+            block = getBlockInWorld(pos.x, pos.y + 1, pos.z);
+            if (block == nullptr || block->id == 0)
+                side |= TOP;
+
+            block = getBlockInWorld(pos.x, pos.y - 1, pos.z);
+            if (block == nullptr || block->id == 0)
+                side |= BOTTOM;
+
+            block = getBlockInWorld(pos.x + 1, pos.y, pos.z);
+            if (block == nullptr || block->id == 0)
+                side |= LEFT;
+
+            block = getBlockInWorld(pos.x - 1, pos.y, pos.z);
+            if (block == nullptr || block->id == 0)
+                side |= RIGHT;
 
             if (side != 0)
-                get_block_faces(pos, m_VBO, side, Textures::STONE);
+                get_block_faces(pos, m_VBO, (Side)side, m_blocks[i].id);
         }
 
         m_flags &= ~CHUNK_FLAG_NEED_REBUILD;
@@ -111,21 +112,17 @@ namespace Minicube
 
     Block *Chunk::getBlock(int x, int y, int z)
     {
-        m_blocks_mutex.lock();
         Block *ret = &m_blocks[getBlockIndex(x, y, z)];
-        m_blocks_mutex.unlock();
         return ret;
     }
 
     void Chunk::generate()
     {
         m_blocks = (Block *)malloc(16 * 16 * 16 * sizeof(Block));
-        m_blocks_mutex.lock();
         for (int i = 0; i < 16 * 16 * 16; i++)
         {
-            m_blocks[i].id = 1;
+            m_blocks[i].id = 2;
         }
-        m_blocks_mutex.unlock();
 
         m_flags |= CHUNK_FLAG_NEED_REBUILD;
 
