@@ -8,7 +8,7 @@ namespace Minicube
         makePermutation();
     }
 
-    double PerlinNoiseContext::noise(double x, double y)
+    double PerlinNoiseContext::perlin(double x, double y)
     {
         double X = (int)floor(x) & 255;
         double Y = (int)floor(y) & 255;
@@ -41,6 +41,25 @@ namespace Minicube
         n /= 2.0;
 
         return n;
+    }
+
+    double PerlinNoiseContext::octavePerlin(double x, double y, int octaves, double persistence)
+    {
+        double total = 0;
+        double frequency = 1;
+        double amplitude = 1;
+        double maxValue = 0; // Used for normalizing result to 0.0 - 1.0
+        for (int i = 0; i < octaves; i++)
+        {
+            total += perlin(x * frequency, y * frequency) * amplitude;
+
+            maxValue += amplitude;
+
+            amplitude *= persistence;
+            frequency *= 2;
+        }
+
+        return total / maxValue;
     }
 
     void PerlinNoiseContext::shuffle(std::vector<int> *tab)

@@ -39,7 +39,7 @@ namespace Minicube
 
         m_shader.use();
 
-        auto projection = glm::perspective(glm::radians(70.0f), m_window.getRatio(), 0.1f, 300.0f);
+        auto projection = glm::perspective(glm::radians(50.0f), m_window.getRatio(), 0.1f, 800.0f);
 
         m_shader.setMat4("projection", projection);
 
@@ -108,6 +108,8 @@ namespace Minicube
         m_world->draw(m_shader);
 
         text::draw2DText(std::to_string(fps), 10, m_window.getSize().y - 26);
+        glm::ivec3 playerPos = m_camera->getPosition();
+        text::draw2DText(std::to_string(playerPos.x) + " " + std::to_string(playerPos.y) + " " + std::to_string(playerPos.z), 10, m_window.getSize().y - 50);
 
         getWindow()->swapBuffers();
     }

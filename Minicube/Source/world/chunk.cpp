@@ -130,7 +130,7 @@ namespace Minicube
                 else
                 {
                     for (int y = 0; y < height - m_pos.y * 16; y++)
-                        m_blocks[getBlockIndex(x, y, z)].id = 1;
+                        m_blocks[getBlockIndex(x, y, z)].id = 2;
                 }
             }
         }

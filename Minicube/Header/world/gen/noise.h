@@ -12,7 +12,8 @@ namespace Minicube
     {
     public:
         PerlinNoiseContext();
-        double noise(double x, double y);
+        double perlin(double x, double y);
+        double octavePerlin(double x, double y, int octaves, double persistence);
 
     private:
         std::vector<int> P;

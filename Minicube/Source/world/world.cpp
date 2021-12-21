@@ -79,10 +79,21 @@ namespace Minicube
             static glm::vec3 lastPlayerChunkPos;
             static int lastChunkMapSize = 0;
 
-            for (unsigned int i = 0; i < m_chunks.size(); i++)
+            if (chunks.size() == 0)
+            {
+                m_chunks.lock();
+                for (auto it = m_chunks.begin(); it != m_chunks.end(); it++)
+                {
+                    chunks.push_back(it->second);
+                }
+                m_chunks.unlock();
+            }
+
+
+            for (unsigned int i = 0; i < chunks.size(); i++)
             {
 
-                if (i % 10 == 0)
+                if (i % 10 == 0 && i != 0)
                 {
                     glm::ivec3 camPos = m_camera->getPosition();
                     glm::vec3 playerChunkPos = glm::vec3(camPos.x / 16, camPos.y / 16, camPos.z / 16);
@@ -101,7 +112,6 @@ namespace Minicube
                             chunks.push_back(it->second);
                         }
                         m_chunks.unlock();
-
                         std::sort(chunks.begin(), chunks.end(), [playerChunkPos](Chunk *a, Chunk *b)
                                   {
                                 glm::vec3 posA = a->getPos();
