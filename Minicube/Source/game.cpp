@@ -8,12 +8,10 @@ namespace Minicube
 
     void Game::start()
     {
-
         m_world.startThreads();
 
         while (m_renderer.getWindow()->isOpen())
         {
-
             // drawing
             m_camera.update();
             m_world.updateVisibleChunks();

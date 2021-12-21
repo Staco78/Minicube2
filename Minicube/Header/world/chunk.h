@@ -188,6 +188,7 @@ namespace
                 VBO.push_back(Minicube::Vertices::cube::back.at(i + 3));
                 VBO.push_back(Minicube::Vertices::cube::back.at(i + 4));
                 VBO.push_back(textureId);
+                VBO.push_back(0.0f);
             }
         }
         if (side & FRONT)
@@ -200,6 +201,7 @@ namespace
                 VBO.push_back(Minicube::Vertices::cube::front.at(i + 3));
                 VBO.push_back(Minicube::Vertices::cube::front.at(i + 4));
                 VBO.push_back(textureId);
+                VBO.push_back(1.0f);
             }
         }
         if (side & TOP)
@@ -212,6 +214,7 @@ namespace
                 VBO.push_back(Minicube::Vertices::cube::top.at(i + 3));
                 VBO.push_back(Minicube::Vertices::cube::top.at(i + 4));
                 VBO.push_back(textureId);
+                VBO.push_back(4.0f);
             }
         }
         if (side & BOTTOM)
@@ -224,6 +227,7 @@ namespace
                 VBO.push_back(Minicube::Vertices::cube::bottom.at(i + 3));
                 VBO.push_back(Minicube::Vertices::cube::bottom.at(i + 4));
                 VBO.push_back(textureId);
+                VBO.push_back(5.0f);
             }
         }
         if (side & LEFT)
@@ -236,6 +240,7 @@ namespace
                 VBO.push_back(Minicube::Vertices::cube::left.at(i + 3));
                 VBO.push_back(Minicube::Vertices::cube::left.at(i + 4));
                 VBO.push_back(textureId);
+                VBO.push_back(2.0f);
             }
         }
         if (side & RIGHT)
@@ -248,6 +253,7 @@ namespace
                 VBO.push_back(Minicube::Vertices::cube::right.at(i + 3));
                 VBO.push_back(Minicube::Vertices::cube::right.at(i + 4));
                 VBO.push_back(textureId);
+                VBO.push_back(3.0f);
             }
         }
     }
