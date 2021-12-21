@@ -128,27 +128,27 @@ namespace Minicube
 
         Chunk *chunk = m_chunkMap->get(m_pos + glm::ivec3(1, 0, 0));
         if (chunk != nullptr)
-            chunk->getFlags() |= CHUNK_FLAG_NEED_REBUILD;
+            chunk->setFlags(chunk->getFlags() | CHUNK_FLAG_NEED_REBUILD);
 
         chunk = m_chunkMap->get(m_pos + glm::ivec3(-1, 0, 0));
         if (chunk != nullptr)
-            chunk->getFlags() |= CHUNK_FLAG_NEED_REBUILD;
+            chunk->setFlags(chunk->getFlags() | CHUNK_FLAG_NEED_REBUILD);
 
         chunk = m_chunkMap->get(m_pos + glm::ivec3(0, 1, 0));
         if (chunk != nullptr)
-            chunk->getFlags() |= CHUNK_FLAG_NEED_REBUILD;
+            chunk->setFlags(chunk->getFlags() | CHUNK_FLAG_NEED_REBUILD);
 
         chunk = m_chunkMap->get(m_pos + glm::ivec3(0, -1, 0));
         if (chunk != nullptr)
-            chunk->getFlags() |= CHUNK_FLAG_NEED_REBUILD;
+            chunk->setFlags(chunk->getFlags() | CHUNK_FLAG_NEED_REBUILD);
 
         chunk = m_chunkMap->get(m_pos + glm::ivec3(0, 0, 1));
         if (chunk != nullptr)
-            chunk->getFlags() |= CHUNK_FLAG_NEED_REBUILD;
+            chunk->setFlags(chunk->getFlags() | CHUNK_FLAG_NEED_REBUILD);
 
         chunk = m_chunkMap->get(m_pos + glm::ivec3(0, 0, -1));
         if (chunk != nullptr)
-            chunk->getFlags() |= CHUNK_FLAG_NEED_REBUILD;
+            chunk->setFlags(chunk->getFlags() | CHUNK_FLAG_NEED_REBUILD);
 
         std::cout << "chunk generated\n";
     }

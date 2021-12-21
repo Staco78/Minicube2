@@ -72,17 +72,51 @@ namespace Minicube
     {
         while (true)
         {
-            m_chunks.lock();
-            for (auto &chunk : m_chunks)
+
+            static std::vector<Chunk *> chunks;
+            static glm::vec3 lastPlayerChunkPos;
+            static int lastChunkMapSize = 0;
+
+            for (unsigned int i = 0; i < m_chunks.size(); i++)
             {
-                if (chunk.second->getFlags() & CHUNK_FLAG_NEED_REBUILD)
+
+                if (i % 10 == 0)
                 {
-                    m_chunks.unlock();
-                    chunk.second->build();
-                    m_chunks.lock();
+                    glm::ivec3 camPos = m_camera->getPosition();
+                    glm::vec3 playerChunkPos = glm::vec3(camPos.x / 16, camPos.y / 16, camPos.z / 16);
+                    int chunkMapSize = m_chunks.size();
+
+                    if (lastPlayerChunkPos != playerChunkPos || lastChunkMapSize != chunkMapSize)
+                    {
+                        lastPlayerChunkPos = playerChunkPos;
+                        lastChunkMapSize = chunkMapSize;
+
+                        chunks.clear();
+
+                        m_chunks.lock();
+                        for (auto it = m_chunks.begin(); it != m_chunks.end(); it++)
+                        {
+                            chunks.push_back(it->second);
+                        }
+                        m_chunks.unlock();
+
+                        std::sort(chunks.begin(), chunks.end(), [playerChunkPos](Chunk *a, Chunk *b)
+                                  {
+                                glm::vec3 posA = a->getPos();
+                                glm::vec3 posB = b->getPos();
+                                return (glm::dot(playerChunkPos - posB, playerChunkPos - posB) > glm::dot(playerChunkPos - posA, playerChunkPos - posA)); });
+
+                        i = 0;
+                    }
+                }
+
+                Chunk *chunk = chunks[i];
+                if (chunk->getFlags() & CHUNK_FLAG_NEED_REBUILD)
+                {
+                    chunk->build();
                 }
             }
-            m_chunks.unlock();
+
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }

@@ -3,6 +3,7 @@
 #include <map>
 #include <cmath>
 #include <thread>
+#include <algorithm>
 
 #include "Glm/vec2.hpp"
 

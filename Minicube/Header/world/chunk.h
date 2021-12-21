@@ -119,9 +119,14 @@ namespace Minicube
             return m_state;
         }
 
-        inline std::atomic<int> &getFlags()
+        inline int getFlags()
         {
             return m_flags;
+        }
+
+        inline void setFlags(int flags)
+        {
+            m_flags = flags;
         }
 
         void build();
