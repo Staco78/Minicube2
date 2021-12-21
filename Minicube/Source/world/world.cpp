@@ -44,13 +44,15 @@ namespace Minicube
         {
             for (int z = playerChunkPosZ - m_renderDistance; z <= playerChunkPosZ + m_renderDistance; z++)
             {
-                for (int y = 0; y < 5; y++)
+                if (getChunk(glm::ivec3(x, 0, z)) == nullptr)
                 {
-                    glm::ivec3 pos(x, y, z);
-                    if (getChunk(pos) == nullptr)
+                    HeightMap heightMap(x, z, &m_perlinNoiseContext);
+                    int nbChunks = heightMap.maxHeight / 16 + 1;
+                    for (int y = 0; y < nbChunks; y++)
                     {
+                        glm::ivec3 pos(x, y, z);
                         Chunk *chunk = new Chunk(&m_chunks, pos);
-                        chunk->generate();
+                        chunk->generate(&heightMap);
                         m_chunks.set(pos, chunk);
                     }
                 }

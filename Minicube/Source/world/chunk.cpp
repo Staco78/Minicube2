@@ -116,12 +116,23 @@ namespace Minicube
         return ret;
     }
 
-    void Chunk::generate()
+    void Chunk::generate(HeightMap *heightMap)
     {
-        m_blocks = (Block *)malloc(16 * 16 * 16 * sizeof(Block));
-        for (int i = 0; i < 16 * 16 * 16; i++)
+        m_blocks = (Block *)calloc(16 * 16 * 16, sizeof(Block));
+        for (int x = 0; x < 16; x++)
         {
-            m_blocks[i].id = 2;
+            for (int z = 0; z < 16; z++)
+            {
+                int height = heightMap->data[x * 16 + z];
+                if (height > (m_pos.y + 1) * 16)
+                    for (int y = 0; y < 16; y++)
+                        m_blocks[getBlockIndex(x, y, z)].id = 2;
+                else
+                {
+                    for (int y = 0; y < height - m_pos.y * 16; y++)
+                        m_blocks[getBlockIndex(x, y, z)].id = 1;
+                }
+            }
         }
 
         m_flags |= CHUNK_FLAG_NEED_REBUILD;
@@ -150,7 +161,7 @@ namespace Minicube
         if (chunk != nullptr)
             chunk->setFlags(chunk->getFlags() | CHUNK_FLAG_NEED_REBUILD);
 
-        std::cout << "chunk generated\n";
+        std::cout << "chunk generated " << m_pos.x << " " << m_pos.y << " " << m_pos.z << "\n";
     }
 
     Block *Chunk::getBlockInWorld(int x, int y, int z)

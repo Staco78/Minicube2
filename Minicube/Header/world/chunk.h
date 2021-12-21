@@ -15,18 +15,7 @@
 #include "shader.h"
 #include "utils.h"
 #include "renderer/textures.h"
-
-typedef struct
-{
-    uint16_t id;
-} Block;
-
-enum class BLockType
-{
-    AIR,
-    GRASS,
-    STONE
-};
+#include "gen/heightMap.h"
 
 namespace Minicube
 {
@@ -74,6 +63,18 @@ namespace Minicube
         std::vector<float> m_data;
     };
 
+    typedef struct
+    {
+        uint16_t id;
+    } Block;
+
+    enum class BLockType
+    {
+        AIR,
+        GRASS,
+        STONE
+    };
+
     enum ChunkState
     {
         CHUNK_STATE_DESTROYING = -1,
@@ -112,7 +113,7 @@ namespace Minicube
             return m_pos;
         }
 
-        void generate();
+        void generate(HeightMap *heightMap);
 
         inline ChunkState getState()
         {
@@ -136,11 +137,13 @@ namespace Minicube
 
         inline int getBlockIndex(int x, int y, int z)
         {
-            return (x + y * 16 + z * 256);
+            assert(x >= 0 && x < 16 && y >= 0 && y < 16 && z >= 0 && z < 16);
+            return x + y * 16 + z * 256;
         }
 
         inline glm::uvec3 getBlockPos(int index)
         {
+            assert(index >= 0 && index < 16 * 16 * 16);
             return glm::uvec3(index % 16, index / 16 % 16, index / 256);
         }
 
