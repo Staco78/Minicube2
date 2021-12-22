@@ -110,6 +110,7 @@ namespace Minicube
         text::draw2DText(std::to_string(fps), 10, m_window.getSize().y - 26);
         glm::ivec3 playerPos = m_camera->getPosition();
         text::draw2DText(std::to_string(playerPos.x) + " " + std::to_string(playerPos.y) + " " + std::to_string(playerPos.z), 10, m_window.getSize().y - 50);
+        text::draw2DText(std::to_string(m_world->getChunkMap()->size()), 10, m_window.getSize().y - 74);
 
         getWindow()->swapBuffers();
     }

@@ -30,37 +30,49 @@ namespace Minicube
         void sendData()
         {
             m_mutex.lock();
+            size = m_data->size();
             glBindBuffer(GL_ARRAY_BUFFER, ID);
-            glBufferData(GL_ARRAY_BUFFER, m_data.size() * sizeof(float), m_data.data(), GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, size * sizeof(float), m_data->data(), GL_STATIC_DRAW);
+            delete m_data;
+            m_data = new std::vector<float>();
             m_mutex.unlock();
         }
+
         void push_back(float data)
         {
             m_mutex.lock();
-            m_data.push_back(data);
+            m_data->push_back(data);
             m_mutex.unlock();
         }
+
         int getSize()
         {
-            std::lock_guard<std::mutex> lock(m_mutex);
-            return m_data.size();
+            return size;
         }
 
         void clear()
         {
             m_mutex.lock();
-            m_data.clear();
+            delete m_data;
+            m_data = new std::vector<float>();
             m_mutex.unlock();
+        }
+
+
+        ~DynamicVBO()
+        {
+            glDeleteBuffers(1, &ID);
+            delete m_data;
         }
 
         unsigned int getTrianglesCount() { return (getSize() / 5); }
         unsigned int getID() { return ID; }
-        std::vector<float> *getData() { return &m_data; }
 
     private:
+        size_t size = 0;
         std::mutex m_mutex;
-        unsigned int ID;
-        std::vector<float> m_data;
+        unsigned int ID = 0;
+        std::vector<float> *m_data = new std::vector<float>();
     };
 
     typedef struct
@@ -90,7 +102,8 @@ namespace Minicube
         CHUNK_FLAG_NONE = 0,
         CHUNK_FLAG_NEED_INIT = 1,
         CHUNK_FLAG_NEED_GENERATION = 2,
-        CHUNK_FLAG_NEED_REBUILD = 4
+        CHUNK_FLAG_NEED_REBUILD = 4,
+        CHUNK_FLAG_NEED_DELETE = 8
     };
 
     class Chunk
@@ -106,7 +119,7 @@ namespace Minicube
             m_state = CHUNK_STATE_DESTROYING;
 
             free(m_blocks);
-            // std::cout << "chunk destructed\n";
+            glDeleteVertexArrays(1, &m_VAO);
         }
         void draw(const Shader &shader);
         void addBlock(int x, int y, int z, Block &block);
@@ -123,6 +136,11 @@ namespace Minicube
             return m_state;
         }
 
+        inline void setState(ChunkState state)
+        {
+            m_state = state;
+        }
+
         inline int getFlags()
         {
             return m_flags;
@@ -131,6 +149,11 @@ namespace Minicube
         inline void setFlags(int flags)
         {
             m_flags = flags;
+        }
+
+        inline void addFlag(int flag)
+        {
+            m_flags |= flag;
         }
 
         void build();

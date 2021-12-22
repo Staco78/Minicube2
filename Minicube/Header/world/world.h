@@ -24,13 +24,17 @@ namespace Minicube
         void startThreads();
         Chunk *getChunk(const glm::ivec3 &pos);
         Block *getBlock(int x, int y, int z);
+        ChunkMap *getChunkMap()
+        {
+            return &m_chunks;
+        }
 
     private:
         ChunkMap m_chunks;
         Camera *m_camera = nullptr;
         void updateChunksThread();
         void generateChunksThread();
-        int m_renderDistance = 12;
+        int m_renderDistance = 32;
 
         PerlinNoiseContext m_perlinNoiseContext;
     };

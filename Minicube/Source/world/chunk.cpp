@@ -39,13 +39,14 @@ namespace Minicube
 
     void Chunk::draw(const Shader &shader)
     {
-        if (m_VBO.getSize() == 0)
-            return;
+
         if (m_state == CHUNK_STATE_LOADED)
         {
             m_VBO.sendData();
             m_state = CHUNK_STATE_IDLE;
         }
+        if (m_VBO.getSize() == 0)
+            return;
         if (m_state == CHUNK_STATE_IDLE)
         {
             shader.use();
@@ -150,27 +151,27 @@ namespace Minicube
 
         Chunk *chunk = m_chunkMap->get(m_pos + glm::ivec3(1, 0, 0));
         if (chunk != nullptr)
-            chunk->setFlags(chunk->getFlags() | CHUNK_FLAG_NEED_REBUILD);
+            chunk->addFlag(CHUNK_FLAG_NEED_REBUILD);
 
         chunk = m_chunkMap->get(m_pos + glm::ivec3(-1, 0, 0));
         if (chunk != nullptr)
-            chunk->setFlags(chunk->getFlags() | CHUNK_FLAG_NEED_REBUILD);
+            chunk->addFlag(CHUNK_FLAG_NEED_REBUILD);
 
         chunk = m_chunkMap->get(m_pos + glm::ivec3(0, 1, 0));
         if (chunk != nullptr)
-            chunk->setFlags(chunk->getFlags() | CHUNK_FLAG_NEED_REBUILD);
+            chunk->addFlag(CHUNK_FLAG_NEED_REBUILD);
 
         chunk = m_chunkMap->get(m_pos + glm::ivec3(0, -1, 0));
         if (chunk != nullptr)
-            chunk->setFlags(chunk->getFlags() | CHUNK_FLAG_NEED_REBUILD);
+            chunk->addFlag(CHUNK_FLAG_NEED_REBUILD);
 
         chunk = m_chunkMap->get(m_pos + glm::ivec3(0, 0, 1));
         if (chunk != nullptr)
-            chunk->setFlags(chunk->getFlags() | CHUNK_FLAG_NEED_REBUILD);
+            chunk->addFlag(CHUNK_FLAG_NEED_REBUILD);
 
         chunk = m_chunkMap->get(m_pos + glm::ivec3(0, 0, -1));
         if (chunk != nullptr)
-            chunk->setFlags(chunk->getFlags() | CHUNK_FLAG_NEED_REBUILD);
+            chunk->addFlag(CHUNK_FLAG_NEED_REBUILD);
 
         // std::cout << "chunk generated " << m_pos.x << " " << m_pos.y << " " << m_pos.z << "\n";
     }

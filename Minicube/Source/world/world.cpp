@@ -26,17 +26,9 @@ namespace Minicube
         {
             if (!isVisible(it->first, playerChunkPosX, playerChunkPosZ, m_renderDistance))
             {
-                ChunkState state = it->second->getState();
-                if (state != CHUNK_STATE_LOADING)
-                {
-                    delete it->second;
-                    it = m_chunks.erase(it);
-                }
-                else
-                    it++;
+                it->second->addFlag(CHUNK_FLAG_NEED_DELETE);
             }
-            else
-                it++;
+            it++;
         }
         m_chunks.unlock();
 
@@ -63,11 +55,23 @@ namespace Minicube
     void World::draw(const Shader &shader)
     {
         m_chunks.lock();
-        for (auto &chunk : m_chunks)
+        auto it = m_chunks.begin();
+        while (it != m_chunks.end())
         {
-            if (chunk.second->getFlags() & CHUNK_FLAG_NEED_INIT)
-                chunk.second->init();
-            chunk.second->draw(shader);
+            int flags = it->second->getFlags();
+            if (flags & CHUNK_FLAG_NEED_DELETE)
+            {
+                if (it->second->getState() != CHUNK_STATE_LOADING)
+                {
+                    delete it->second;
+                    it = m_chunks.erase(it);
+                }
+                continue;
+            }
+            if (flags & CHUNK_FLAG_NEED_INIT)
+                it->second->init();
+            it->second->draw(shader);
+            it++;
         }
         m_chunks.unlock();
     }
@@ -106,19 +110,20 @@ namespace Minicube
                         lastChunkMapSize = chunkMapSize;
 
                         chunks.clear();
+                        chunks.shrink_to_fit();
 
                         m_chunks.lock();
                         for (auto it = m_chunks.begin(); it != m_chunks.end(); it++)
                         {
                             chunks.push_back(it->second);
                         }
-                        m_chunks.unlock();
                         std::sort(chunks.begin(), chunks.end(), [playerChunkPos](Chunk *a, Chunk *b)
                                   {
                                 glm::vec3 posA = a->getPos();
                                 glm::vec3 posB = b->getPos();
                                 return (glm::dot(playerChunkPos - posB, playerChunkPos - posB) > glm::dot(playerChunkPos - posA, playerChunkPos - posA)); });
 
+                        m_chunks.unlock();
                         i = 0;
                     }
                 }
