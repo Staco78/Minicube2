@@ -65,6 +65,8 @@ namespace Minicube
         m_chunks.lock();
         for (auto &chunk : m_chunks)
         {
+            if (chunk.second->getFlags() & CHUNK_FLAG_NEED_INIT)
+                chunk.second->init();
             chunk.second->draw(shader);
         }
         m_chunks.unlock();
@@ -88,7 +90,6 @@ namespace Minicube
                 }
                 m_chunks.unlock();
             }
-
 
             for (unsigned int i = 0; i < chunks.size(); i++)
             {
@@ -133,8 +134,19 @@ namespace Minicube
         }
     }
 
+    void World::generateChunksThread()
+    {
+        while (true)
+        {
+            updateVisibleChunks();
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+
     void World::startThreads()
     {
+        std::thread generateChunksThread(&World::generateChunksThread, this);
+        generateChunksThread.detach();
         std::thread updateChunksThread(&World::updateChunksThread, this);
         updateChunksThread.detach();
     }

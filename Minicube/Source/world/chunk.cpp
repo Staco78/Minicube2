@@ -7,6 +7,17 @@ namespace Minicube
         m_chunkMap = chunkMap;
         m_pos = pos;
 
+        if (pos.x != 0 || pos.y != 0 || pos.z != 0)
+            m_model = glm::translate(m_model, glm::vec3(pos.x * 16, pos.y * 16, pos.z * 16));
+
+        m_state = CHUNK_STATE_UNLOADED;
+    }
+
+    // must be called in main thread before drawing
+    void Chunk::init()
+    {
+        m_VBO.init();
+
         glGenVertexArrays(1, &m_VAO);
         glBindVertexArray(m_VAO);
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO.getID());
@@ -23,10 +34,7 @@ namespace Minicube
         glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *)(6 * sizeof(float)));
         glEnableVertexAttribArray(3);
 
-        if (pos.x != 0 || pos.y != 0 || pos.z != 0)
-            m_model = glm::translate(m_model, glm::vec3(pos.x * 16, pos.y * 16, pos.z * 16));
-
-        m_state = CHUNK_STATE_UNLOADED;
+        m_flags &= ~CHUNK_FLAG_NEED_INIT;
     }
 
     void Chunk::draw(const Shader &shader)
@@ -71,7 +79,7 @@ namespace Minicube
 
     void Chunk::constructVBO()
     {
-        std::cout << "constructing VBO " << m_pos.x << " " << m_pos.y << " " << m_pos.z << "\n";
+        // std::cout << "constructing VBO " << m_pos.x << " " << m_pos.y << " " << m_pos.z << "\n";
         glm::uvec3 pos;
         for (int i = 0; i < 16 * 16 * 16; i++)
         {
@@ -164,7 +172,7 @@ namespace Minicube
         if (chunk != nullptr)
             chunk->setFlags(chunk->getFlags() | CHUNK_FLAG_NEED_REBUILD);
 
-        std::cout << "chunk generated " << m_pos.x << " " << m_pos.y << " " << m_pos.z << "\n";
+        // std::cout << "chunk generated " << m_pos.x << " " << m_pos.y << " " << m_pos.z << "\n";
     }
 
     Block *Chunk::getBlockInWorld(int x, int y, int z)

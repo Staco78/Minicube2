@@ -23,7 +23,7 @@ namespace Minicube
     class DynamicVBO
     {
     public:
-        DynamicVBO()
+        void init()
         {
             glGenBuffers(1, &ID);
         }
@@ -88,13 +88,16 @@ namespace Minicube
     enum ChunkFlags
     {
         CHUNK_FLAG_NONE = 0,
-        CHUNK_FLAG_NEED_REBUILD = 1
+        CHUNK_FLAG_NEED_INIT = 1,
+        CHUNK_FLAG_NEED_GENERATION = 2,
+        CHUNK_FLAG_NEED_REBUILD = 4
     };
 
     class Chunk
     {
     public:
         Chunk(ChunkMap *chunkMap, glm::ivec3 pos);
+        void init();
         ~Chunk()
         {
             while (m_state == CHUNK_STATE_LOADING)
@@ -103,7 +106,7 @@ namespace Minicube
             m_state = CHUNK_STATE_DESTROYING;
 
             free(m_blocks);
-            std::cout << "chunk destructed\n";
+            // std::cout << "chunk destructed\n";
         }
         void draw(const Shader &shader);
         void addBlock(int x, int y, int z, Block &block);
@@ -157,7 +160,7 @@ namespace Minicube
         ChunkMap *m_chunkMap = nullptr;
 
         std::atomic<ChunkState> m_state = CHUNK_STATE_0;
-        std::atomic<int> m_flags = CHUNK_FLAG_NONE;
+        std::atomic<int> m_flags = CHUNK_FLAG_NEED_INIT;
     };
 
 } // namespace Minicube

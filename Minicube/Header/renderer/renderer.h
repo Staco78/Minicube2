@@ -30,7 +30,7 @@ namespace Minicube
         int fps = 0;
 #ifdef _DEBUG
         int lineModeTimer = 0;
-        bool lineMode = true;
+        bool lineMode = false;
 #endif
     };
 }
