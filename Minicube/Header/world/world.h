@@ -34,7 +34,7 @@ namespace Minicube
         Camera *m_camera = nullptr;
         void updateChunksThread();
         void generateChunksThread();
-        int m_renderDistance = 32;
+        int m_renderDistance = 12;
 
         PerlinNoiseContext m_perlinNoiseContext;
     };

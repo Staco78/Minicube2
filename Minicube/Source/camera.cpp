@@ -69,7 +69,7 @@ namespace Minicube
         d.z = sin(glm::radians(yaw));
         glm::vec3 dir = glm::normalize(d);
 
-        float speed = 60 * deltaTime;
+        float speed = 150 * deltaTime;
         if (glfwGetKey(mp_window->getWindow(), GLFW_KEY_W) == GLFW_PRESS)
             pos -= speed * dir;
         if (glfwGetKey(mp_window->getWindow(), GLFW_KEY_S) == GLFW_PRESS)

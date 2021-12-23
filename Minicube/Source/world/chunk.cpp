@@ -9,8 +9,6 @@ namespace Minicube
 
         if (pos.x != 0 || pos.y != 0 || pos.z != 0)
             m_model = glm::translate(m_model, glm::vec3(pos.x * 16, pos.y * 16, pos.z * 16));
-
-        m_state = CHUNK_STATE_UNLOADED;
     }
 
     // must be called in main thread before drawing
@@ -40,14 +38,14 @@ namespace Minicube
     void Chunk::draw(const Shader &shader)
     {
 
-        if (m_state == CHUNK_STATE_LOADED)
+        if (m_flags & CHUNK_FLAG_NEED_SEND_VBO)
         {
             m_VBO.sendData();
-            m_state = CHUNK_STATE_IDLE;
+            m_flags &= ~CHUNK_FLAG_NEED_SEND_VBO;
         }
         if (m_VBO.getSize() == 0)
             return;
-        if (m_state == CHUNK_STATE_IDLE)
+        if (!(m_flags & CHUNK_FLAG_NEED_INIT & ~CHUNK_FLAG_IS_GENERATED & CHUNK_FLAG_NEED_DELETE))
         {
             shader.use();
             shader.setMat4("model", m_model);
@@ -64,18 +62,14 @@ namespace Minicube
 
     void Chunk::build()
     {
-        if (m_state == CHUNK_STATE_UNLOADED)
+        if (m_flags & CHUNK_FLAG_NEED_REBUILD && m_flags & CHUNK_FLAG_IS_GENERATED && !(m_flags & CHUNK_FLAG_NEED_DELETE))
         {
+            m_flags &= ~CHUNK_FLAG_NEED_REBUILD;
+            m_flags |= CHUNK_FLAG_IS_BUILDING;
+            constructVBO();
+            m_flags &= ~CHUNK_FLAG_IS_BUILDING;
+            m_flags |= CHUNK_FLAG_NEED_SEND_VBO;
         }
-        else if (m_state == CHUNK_STATE_IDLE)
-        {
-            m_VBO.clear();
-        }
-        else
-            return;
-        m_state = CHUNK_STATE_LOADING;
-        constructVBO();
-        m_state = CHUNK_STATE_LOADED;
     }
 
     void Chunk::constructVBO()
@@ -87,36 +81,98 @@ namespace Minicube
             if (m_blocks[i].id == 0)
                 continue;
 
-            int side = 0;
             Block *block;
             pos = getBlockPos(i);
 
             block = getBlockInWorld(pos.x, pos.y, pos.z + 1);
             if (block == nullptr || block->id == 0)
-                side |= BACK;
+            {
+                for (unsigned int y = 0; y < Minicube::Vertices::cube::back.size(); y += 5)
+                {
+                    m_VBO.push_back(Minicube::Vertices::cube::back.at(y) + pos.x);
+                    m_VBO.push_back(Minicube::Vertices::cube::back.at(y + 1) + pos.y);
+                    m_VBO.push_back(Minicube::Vertices::cube::back.at(y + 2) + pos.z);
+                    m_VBO.push_back(Minicube::Vertices::cube::back.at(y + 3));
+                    m_VBO.push_back(Minicube::Vertices::cube::back.at(y + 4));
+                    m_VBO.push_back(m_blocks[i].id);
+                    m_VBO.push_back(0.0f);
+                }
+            }
 
             block = getBlockInWorld(pos.x, pos.y, pos.z - 1);
             if (block == nullptr || block->id == 0)
-                side |= FRONT;
+            {
+                for (unsigned int y = 0; y < Minicube::Vertices::cube::front.size(); y += 5)
+                {
+                    m_VBO.push_back(Minicube::Vertices::cube::front.at(y) + pos.x);
+                    m_VBO.push_back(Minicube::Vertices::cube::front.at(y + 1) + pos.y);
+                    m_VBO.push_back(Minicube::Vertices::cube::front.at(y + 2) + pos.z);
+                    m_VBO.push_back(Minicube::Vertices::cube::front.at(y + 3));
+                    m_VBO.push_back(Minicube::Vertices::cube::front.at(y + 4));
+                    m_VBO.push_back(m_blocks[i].id);
+                    m_VBO.push_back(1.0f);
+                }
+            }
 
             block = getBlockInWorld(pos.x, pos.y + 1, pos.z);
             if (block == nullptr || block->id == 0)
-                side |= TOP;
+            {
+                for (unsigned int y = 0; y < Minicube::Vertices::cube::top.size(); y += 5)
+                {
+                    m_VBO.push_back(Minicube::Vertices::cube::top.at(y) + pos.x);
+                    m_VBO.push_back(Minicube::Vertices::cube::top.at(y + 1) + pos.y);
+                    m_VBO.push_back(Minicube::Vertices::cube::top.at(y + 2) + pos.z);
+                    m_VBO.push_back(Minicube::Vertices::cube::top.at(y + 3));
+                    m_VBO.push_back(Minicube::Vertices::cube::top.at(y + 4));
+                    m_VBO.push_back(m_blocks[i].id);
+                    m_VBO.push_back(4.0f);
+                }
+            }
 
             block = getBlockInWorld(pos.x, pos.y - 1, pos.z);
             if (block == nullptr || block->id == 0)
-                side |= BOTTOM;
+            {
+                for (unsigned int y = 0; y < Minicube::Vertices::cube::bottom.size(); y += 5)
+                {
+                    m_VBO.push_back(Minicube::Vertices::cube::bottom.at(y) + pos.x);
+                    m_VBO.push_back(Minicube::Vertices::cube::bottom.at(y + 1) + pos.y);
+                    m_VBO.push_back(Minicube::Vertices::cube::bottom.at(y + 2) + pos.z);
+                    m_VBO.push_back(Minicube::Vertices::cube::bottom.at(y + 3));
+                    m_VBO.push_back(Minicube::Vertices::cube::bottom.at(y + 4));
+                    m_VBO.push_back(m_blocks[i].id);
+                    m_VBO.push_back(5.0f);
+                }
+            }
 
             block = getBlockInWorld(pos.x + 1, pos.y, pos.z);
             if (block == nullptr || block->id == 0)
-                side |= LEFT;
+            {
+                for (unsigned int y = 0; y < Minicube::Vertices::cube::left.size(); y += 5)
+                {
+                    m_VBO.push_back(Minicube::Vertices::cube::left.at(y) + pos.x);
+                    m_VBO.push_back(Minicube::Vertices::cube::left.at(y + 1) + pos.y);
+                    m_VBO.push_back(Minicube::Vertices::cube::left.at(y + 2) + pos.z);
+                    m_VBO.push_back(Minicube::Vertices::cube::left.at(y + 3));
+                    m_VBO.push_back(Minicube::Vertices::cube::left.at(y + 4));
+                    m_VBO.push_back(m_blocks[i].id);
+                    m_VBO.push_back(2.0f);
+                }
+            }
 
             block = getBlockInWorld(pos.x - 1, pos.y, pos.z);
             if (block == nullptr || block->id == 0)
-                side |= RIGHT;
-
-            if (side != 0)
-                get_block_faces(pos, m_VBO, (Side)side, m_blocks[i].id);
+            {
+                for (unsigned int y = 0; y < Minicube::Vertices::cube::right.size(); y += 5)
+                {
+                    m_VBO.push_back(Minicube::Vertices::cube::right.at(y) + pos.x);
+                    m_VBO.push_back(Minicube::Vertices::cube::right.at(y + 1) + pos.y);
+                    m_VBO.push_back(Minicube::Vertices::cube::right.at(y + 2) + pos.z);
+                    m_VBO.push_back(Minicube::Vertices::cube::right.at(y + 3));
+                    m_VBO.push_back(Minicube::Vertices::cube::right.at(y + 4));
+                    m_VBO.push_back(m_blocks[i].id);
+                    m_VBO.push_back(3.0f);
+                }
+            }
         }
 
         m_flags &= ~CHUNK_FLAG_NEED_REBUILD;
@@ -130,6 +186,11 @@ namespace Minicube
 
     void Chunk::generate(HeightMap *heightMap)
     {
+        if (m_flags & CHUNK_FLAG_IS_GENERATED)
+        {
+            return;
+        }
+
         m_blocks = (Block *)calloc(16 * 16 * 16, sizeof(Block));
         for (int x = 0; x < 16; x++)
         {
@@ -147,6 +208,7 @@ namespace Minicube
             }
         }
 
+        m_flags |= CHUNK_FLAG_IS_GENERATED;
         m_flags |= CHUNK_FLAG_NEED_REBUILD;
 
         Chunk *chunk = m_chunkMap->get(m_pos + glm::ivec3(1, 0, 0));

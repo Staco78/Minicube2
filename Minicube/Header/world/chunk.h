@@ -50,15 +50,6 @@ namespace Minicube
             return size;
         }
 
-        void clear()
-        {
-            m_mutex.lock();
-            delete m_data;
-            m_data = new std::vector<float>();
-            m_mutex.unlock();
-        }
-
-
         ~DynamicVBO()
         {
             glDeleteBuffers(1, &ID);
@@ -80,30 +71,21 @@ namespace Minicube
         uint16_t id;
     } Block;
 
-    enum class BLockType
+    enum class BlockId
     {
         AIR,
         GRASS,
         STONE
     };
 
-    enum ChunkState
-    {
-        CHUNK_STATE_DESTROYING = -1,
-        CHUNK_STATE_0,
-        CHUNK_STATE_UNLOADED,
-        CHUNK_STATE_LOADING,
-        CHUNK_STATE_LOADED,
-        CHUNK_STATE_IDLE,
-    };
-
     enum ChunkFlags
     {
-        CHUNK_FLAG_NONE = 0,
         CHUNK_FLAG_NEED_INIT = 1,
-        CHUNK_FLAG_NEED_GENERATION = 2,
+        CHUNK_FLAG_IS_GENERATED = 2,
         CHUNK_FLAG_NEED_REBUILD = 4,
-        CHUNK_FLAG_NEED_DELETE = 8
+        CHUNK_FLAG_IS_BUILDING = 8,
+        CHUNK_FLAG_NEED_SEND_VBO = 16,
+        CHUNK_FLAG_NEED_DELETE = 32,
     };
 
     class Chunk
@@ -113,35 +95,20 @@ namespace Minicube
         void init();
         ~Chunk()
         {
-            while (m_state == CHUNK_STATE_LOADING)
-            {
-            }
-            m_state = CHUNK_STATE_DESTROYING;
-
             free(m_blocks);
             glDeleteVertexArrays(1, &m_VAO);
         }
         void draw(const Shader &shader);
         void addBlock(int x, int y, int z, Block &block);
         Block *getBlock(int x, int y, int z);
-        inline glm::ivec3 getPos()
+        inline const glm::ivec3 &getPos() const
         {
             return m_pos;
         }
 
         void generate(HeightMap *heightMap);
 
-        inline ChunkState getState()
-        {
-            return m_state;
-        }
-
-        inline void setState(ChunkState state)
-        {
-            m_state = state;
-        }
-
-        inline int getFlags()
+        inline int getFlags() const
         {
             return m_flags;
         }
@@ -175,112 +142,14 @@ namespace Minicube
 
         Block *getBlockInWorld(int x, int y, int z);
 
-        Block *m_blocks;
+        Block *m_blocks = nullptr;
         glm::ivec3 m_pos;
         DynamicVBO m_VBO;
         unsigned int m_VAO;
         glm::mat4 m_model = glm::mat4(1.0f);
         ChunkMap *m_chunkMap = nullptr;
 
-        std::atomic<ChunkState> m_state = CHUNK_STATE_0;
         std::atomic<int> m_flags = CHUNK_FLAG_NEED_INIT;
     };
 
 } // namespace Minicube
-
-namespace
-{
-
-    enum Side
-    {
-        BACK = 0b00000001,
-        FRONT = 0b00000010,
-        TOP = 0b00000100,
-        BOTTOM = 0b00001000,
-        LEFT = 0b00010000,
-        RIGHT = 0b00100000
-    };
-
-    void get_block_faces(const glm::uvec3 &pos, Minicube::DynamicVBO &VBO, Side side, unsigned int textureId)
-    {
-
-        if (side & BACK)
-        {
-            for (unsigned int i = 0; i < Minicube::Vertices::cube::back.size(); i += 5)
-            {
-                VBO.push_back(Minicube::Vertices::cube::back.at(i) + pos.x);
-                VBO.push_back(Minicube::Vertices::cube::back.at(i + 1) + pos.y);
-                VBO.push_back(Minicube::Vertices::cube::back.at(i + 2) + pos.z);
-                VBO.push_back(Minicube::Vertices::cube::back.at(i + 3));
-                VBO.push_back(Minicube::Vertices::cube::back.at(i + 4));
-                VBO.push_back(textureId);
-                VBO.push_back(0.0f);
-            }
-        }
-        if (side & FRONT)
-        {
-            for (unsigned int i = 0; i < Minicube::Vertices::cube::front.size(); i += 5)
-            {
-                VBO.push_back(Minicube::Vertices::cube::front.at(i) + pos.x);
-                VBO.push_back(Minicube::Vertices::cube::front.at(i + 1) + pos.y);
-                VBO.push_back(Minicube::Vertices::cube::front.at(i + 2) + pos.z);
-                VBO.push_back(Minicube::Vertices::cube::front.at(i + 3));
-                VBO.push_back(Minicube::Vertices::cube::front.at(i + 4));
-                VBO.push_back(textureId);
-                VBO.push_back(1.0f);
-            }
-        }
-        if (side & TOP)
-        {
-            for (unsigned int i = 0; i < Minicube::Vertices::cube::top.size(); i += 5)
-            {
-                VBO.push_back(Minicube::Vertices::cube::top.at(i) + pos.x);
-                VBO.push_back(Minicube::Vertices::cube::top.at(i + 1) + pos.y);
-                VBO.push_back(Minicube::Vertices::cube::top.at(i + 2) + pos.z);
-                VBO.push_back(Minicube::Vertices::cube::top.at(i + 3));
-                VBO.push_back(Minicube::Vertices::cube::top.at(i + 4));
-                VBO.push_back(textureId);
-                VBO.push_back(4.0f);
-            }
-        }
-        if (side & BOTTOM)
-        {
-            for (unsigned int i = 0; i < Minicube::Vertices::cube::bottom.size(); i += 5)
-            {
-                VBO.push_back(Minicube::Vertices::cube::bottom.at(i) + pos.x);
-                VBO.push_back(Minicube::Vertices::cube::bottom.at(i + 1) + pos.y);
-                VBO.push_back(Minicube::Vertices::cube::bottom.at(i + 2) + pos.z);
-                VBO.push_back(Minicube::Vertices::cube::bottom.at(i + 3));
-                VBO.push_back(Minicube::Vertices::cube::bottom.at(i + 4));
-                VBO.push_back(textureId);
-                VBO.push_back(5.0f);
-            }
-        }
-        if (side & LEFT)
-        {
-            for (unsigned int i = 0; i < Minicube::Vertices::cube::left.size(); i += 5)
-            {
-                VBO.push_back(Minicube::Vertices::cube::left.at(i) + pos.x);
-                VBO.push_back(Minicube::Vertices::cube::left.at(i + 1) + pos.y);
-                VBO.push_back(Minicube::Vertices::cube::left.at(i + 2) + pos.z);
-                VBO.push_back(Minicube::Vertices::cube::left.at(i + 3));
-                VBO.push_back(Minicube::Vertices::cube::left.at(i + 4));
-                VBO.push_back(textureId);
-                VBO.push_back(2.0f);
-            }
-        }
-        if (side & RIGHT)
-        {
-            for (unsigned int i = 0; i < Minicube::Vertices::cube::right.size(); i += 5)
-            {
-                VBO.push_back(Minicube::Vertices::cube::right.at(i) + pos.x);
-                VBO.push_back(Minicube::Vertices::cube::right.at(i + 1) + pos.y);
-                VBO.push_back(Minicube::Vertices::cube::right.at(i + 2) + pos.z);
-                VBO.push_back(Minicube::Vertices::cube::right.at(i + 3));
-                VBO.push_back(Minicube::Vertices::cube::right.at(i + 4));
-                VBO.push_back(textureId);
-                VBO.push_back(3.0f);
-            }
-        }
-    }
-}

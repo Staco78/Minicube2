@@ -7,30 +7,11 @@ namespace Minicube
         m_camera = camera;
     }
 
-    inline bool isVisible(const glm::ivec3 &chunkPos, int playerChunkPosX, int playerChunkPosZ, int renderDistance)
-    {
-        return chunkPos.x >= playerChunkPosX - renderDistance && chunkPos.x <= playerChunkPosX + renderDistance &&
-               chunkPos.z >= playerChunkPosZ - renderDistance && chunkPos.z <= playerChunkPosZ + renderDistance;
-    }
-
     void World::updateVisibleChunks()
     {
         glm::vec3 camPos = m_camera->getPosition();
         int playerChunkPosX = int(camPos.x) / 16;
         int playerChunkPosZ = int(camPos.z) / 16;
-        int playerChunkPosY = int(camPos.y) / 16;
-
-        m_chunks.lock();
-        auto it = m_chunks.begin();
-        while (it != m_chunks.end())
-        {
-            if (!isVisible(it->first, playerChunkPosX, playerChunkPosZ, m_renderDistance))
-            {
-                it->second->addFlag(CHUNK_FLAG_NEED_DELETE);
-            }
-            it++;
-        }
-        m_chunks.unlock();
 
         for (int x = playerChunkPosX - m_renderDistance; x <= playerChunkPosX + m_renderDistance; x++)
         {
@@ -52,26 +33,39 @@ namespace Minicube
         }
     }
 
+    inline bool isVisible(const glm::ivec3 &chunkPos, int playerChunkPosX, int playerChunkPosZ, int renderDistance)
+    {
+        return chunkPos.x >= playerChunkPosX - renderDistance && chunkPos.x <= playerChunkPosX + renderDistance &&
+               chunkPos.z >= playerChunkPosZ - renderDistance && chunkPos.z <= playerChunkPosZ + renderDistance;
+    }
+
     void World::draw(const Shader &shader)
     {
+        glm::vec3 camPos = m_camera->getPosition();
+        int playerChunkPosX = int(camPos.x) / 16;
+        int playerChunkPosZ = int(camPos.z) / 16;
+
         m_chunks.lock();
         auto it = m_chunks.begin();
         while (it != m_chunks.end())
         {
-            int flags = it->second->getFlags();
-            if (flags & CHUNK_FLAG_NEED_DELETE)
+            if (!isVisible(it->first, playerChunkPosX, playerChunkPosZ, m_renderDistance))
             {
-                if (it->second->getState() != CHUNK_STATE_LOADING)
+                if (it->second->getFlags() & CHUNK_FLAG_IS_BUILDING)
+                    it++;
+                else
                 {
                     delete it->second;
                     it = m_chunks.erase(it);
                 }
-                continue;
             }
-            if (flags & CHUNK_FLAG_NEED_INIT)
-                it->second->init();
-            it->second->draw(shader);
-            it++;
+            else
+            {
+                if (it->second->getFlags() & CHUNK_FLAG_NEED_INIT)
+                    it->second->init();
+                it->second->draw(shader);
+                it++;
+            }
         }
         m_chunks.unlock();
     }
@@ -82,7 +76,7 @@ namespace Minicube
         {
 
             static std::vector<Chunk *> chunks;
-            static glm::vec3 lastPlayerChunkPos;
+            static glm::vec2 lastPlayerChunkPos;
             static int lastChunkMapSize = 0;
 
             if (chunks.size() == 0)
@@ -98,10 +92,10 @@ namespace Minicube
             for (unsigned int i = 0; i < chunks.size(); i++)
             {
 
-                if (i % 10 == 0 && i != 0)
+                if ((i % 100 == 0 && i != 0) || lastChunkMapSize == 0)
                 {
                     glm::ivec3 camPos = m_camera->getPosition();
-                    glm::vec3 playerChunkPos = glm::vec3(camPos.x / 16, camPos.y / 16, camPos.z / 16);
+                    glm::vec2 playerChunkPos = glm::vec2(camPos.x / 16, camPos.z / 16);
                     int chunkMapSize = m_chunks.size();
 
                     if (lastPlayerChunkPos != playerChunkPos || lastChunkMapSize != chunkMapSize)
@@ -119,20 +113,17 @@ namespace Minicube
                         }
                         std::sort(chunks.begin(), chunks.end(), [playerChunkPos](Chunk *a, Chunk *b)
                                   {
-                                glm::vec3 posA = a->getPos();
-                                glm::vec3 posB = b->getPos();
+                                glm::vec2 posA(a->getPos().x, a->getPos().z);
+                                glm::vec2 posB(b->getPos().x, b->getPos().z);
                                 return (glm::dot(playerChunkPos - posB, playerChunkPos - posB) > glm::dot(playerChunkPos - posA, playerChunkPos - posA)); });
-
                         m_chunks.unlock();
+
                         i = 0;
                     }
                 }
 
-                Chunk *chunk = chunks[i];
-                if (chunk->getFlags() & CHUNK_FLAG_NEED_REBUILD)
-                {
-                    chunk->build();
-                }
+                if (chunks[i]->getFlags() & CHUNK_FLAG_NEED_REBUILD)
+                    chunks[i]->build();
             }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
