@@ -38,6 +38,8 @@ namespace Minicube
     void Chunk::draw(const Shader &shader)
     {
 
+        if (m_flags & CHUNK_FLAG_NEED_DELETE)
+            return;
         if (m_flags & CHUNK_FLAG_NEED_SEND_VBO)
         {
             m_VBO.sendData();
@@ -45,7 +47,7 @@ namespace Minicube
         }
         if (m_VBO.getSize() == 0)
             return;
-        if (!(m_flags & CHUNK_FLAG_NEED_INIT & ~CHUNK_FLAG_IS_GENERATED & CHUNK_FLAG_NEED_DELETE))
+        if (!(m_flags & CHUNK_FLAG_NEED_INIT) && m_flags & CHUNK_FLAG_IS_GENERATED)
         {
             shader.use();
             shader.setMat4("model", m_model);
@@ -62,19 +64,24 @@ namespace Minicube
 
     void Chunk::build()
     {
+        m_flags |= CHUNK_FLAG_IS_BUILDING;
         if (m_flags & CHUNK_FLAG_NEED_REBUILD && m_flags & CHUNK_FLAG_IS_GENERATED && !(m_flags & CHUNK_FLAG_NEED_DELETE))
         {
             m_flags &= ~CHUNK_FLAG_NEED_REBUILD;
-            m_flags |= CHUNK_FLAG_IS_BUILDING;
             constructVBO();
             m_flags &= ~CHUNK_FLAG_IS_BUILDING;
             m_flags |= CHUNK_FLAG_NEED_SEND_VBO;
+        }
+        else
+        {
+            m_flags &= ~CHUNK_FLAG_IS_BUILDING;
         }
     }
 
     void Chunk::constructVBO()
     {
         // std::cout << "constructing VBO " << m_pos.x << " " << m_pos.y << " " << m_pos.z << "\n";
+        m_isConstructing_mutex.lock();
         glm::uvec3 pos;
         for (int i = 0; i < 16 * 16 * 16; i++)
         {
@@ -175,6 +182,7 @@ namespace Minicube
             }
         }
 
+        m_isConstructing_mutex.unlock();
         m_flags &= ~CHUNK_FLAG_NEED_REBUILD;
     }
 
@@ -196,14 +204,15 @@ namespace Minicube
         {
             for (int z = 0; z < 16; z++)
             {
-                int height = heightMap->data[x * 16 + z];
+                HeightMapData data = heightMap->data[x * 16 + z];
+                int height = data.height;
                 if (height > (m_pos.y + 1) * 16)
                     for (int y = 0; y < 16; y++)
-                        m_blocks[getBlockIndex(x, y, z)].id = 2;
+                        m_blocks[getBlockIndex(x, y, z)].id = BlockId::STONE;
                 else
                 {
                     for (int y = 0; y < height - m_pos.y * 16; y++)
-                        m_blocks[getBlockIndex(x, y, z)].id = 2;
+                        m_blocks[getBlockIndex(x, y, z)].id = BlockId::STONE;
                 }
             }
         }

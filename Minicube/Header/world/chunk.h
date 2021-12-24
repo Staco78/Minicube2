@@ -15,7 +15,7 @@
 #include "shader.h"
 #include "utils.h"
 #include "renderer/textures.h"
-#include "gen/heightMap.h"
+#include "gen/worldGen.h"
 
 namespace Minicube
 {
@@ -38,14 +38,14 @@ namespace Minicube
             m_mutex.unlock();
         }
 
-        void push_back(float data)
+        inline void push_back(float data)
         {
             m_mutex.lock();
             m_data->push_back(data);
             m_mutex.unlock();
         }
 
-        int getSize()
+        inline int getSize()
         {
             return size;
         }
@@ -56,8 +56,8 @@ namespace Minicube
             delete m_data;
         }
 
-        unsigned int getTrianglesCount() { return (getSize() / 5); }
-        unsigned int getID() { return ID; }
+        inline unsigned int getTrianglesCount() { return (getSize() / 5); }
+        inline unsigned int getID() { return ID; }
 
     private:
         size_t size = 0;
@@ -66,17 +66,17 @@ namespace Minicube
         std::vector<float> *m_data = new std::vector<float>();
     };
 
-    typedef struct
-    {
-        uint16_t id;
-    } Block;
-
-    enum class BlockId
+    enum BlockId
     {
         AIR,
         GRASS,
         STONE
     };
+
+    typedef struct
+    {
+        BlockId id;
+    } Block;
 
     enum ChunkFlags
     {
@@ -95,6 +95,10 @@ namespace Minicube
         void init();
         ~Chunk()
         {
+            m_flags |= CHUNK_FLAG_NEED_DELETE;
+
+            m_isConstructing_mutex.lock();
+            m_isConstructing_mutex.unlock();
             free(m_blocks);
             glDeleteVertexArrays(1, &m_VAO);
         }
@@ -145,11 +149,12 @@ namespace Minicube
         Block *m_blocks = nullptr;
         glm::ivec3 m_pos;
         DynamicVBO m_VBO;
-        unsigned int m_VAO;
+        unsigned int m_VAO = 0;
         glm::mat4 m_model = glm::mat4(1.0f);
         ChunkMap *m_chunkMap = nullptr;
 
         std::atomic<int> m_flags = CHUNK_FLAG_NEED_INIT;
+        std::mutex m_isConstructing_mutex;
     };
 
 } // namespace Minicube

@@ -2,7 +2,7 @@
 
 namespace Minicube
 {
-    World::World(Camera *camera)
+    World::World(Camera *camera) : m_perlinNoiseContext(time(0))
     {
         m_camera = camera;
     }

@@ -5,3 +5,7 @@ file(GLOB_RECURSE HDRS *.h)
 
 add_executable(Minicube ${SRCS} ${HDRS})
 target_link_libraries(Minicube glfw)
+
+set(THREADS_PREFER_PTHREADS_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(Minicube Threads::Threads)

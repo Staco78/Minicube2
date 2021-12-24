@@ -10,7 +10,7 @@
 #include "chunkMap.h"
 #include "chunk.h"
 #include "camera.h"
-#include "gen/heightMap.h"
+#include "gen/worldGen.h"
 
 namespace Minicube
 {
@@ -34,7 +34,7 @@ namespace Minicube
         Camera *m_camera = nullptr;
         void updateChunksThread();
         void generateChunksThread();
-        int m_renderDistance = 12;
+        int m_renderDistance = 25;
 
         PerlinNoiseContext m_perlinNoiseContext;
     };

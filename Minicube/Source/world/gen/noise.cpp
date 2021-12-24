@@ -3,12 +3,12 @@
 namespace Minicube
 {
 
-    PerlinNoiseContext::PerlinNoiseContext()
+    PerlinNoise::PerlinNoise(unsigned int seed)
     {
-        makePermutation();
+        makePermutation(seed);
     }
 
-    double PerlinNoiseContext::perlin(double x, double y)
+    double PerlinNoise::perlin(double x, double y)
     {
         double X = (int)floor(x) & 255;
         double Y = (int)floor(y) & 255;
@@ -37,13 +37,13 @@ namespace Minicube
 
         double n = lerp(u, lerp(v, dotBottomLeft, dotTopLeft), lerp(v, dotBottomRight, dotTopRight));
 
-        n += 1.0;
-        n /= 2.0;
+        n += 0.5;
+        // n /= 2.0;
 
         return n;
     }
 
-    double PerlinNoiseContext::octavePerlin(double x, double y, int octaves, double persistence)
+    double PerlinNoise::octavePerlin(double x, double y, int octaves, double persistence)
     {
         double total = 0;
         double frequency = 1;
@@ -62,7 +62,7 @@ namespace Minicube
         return total / maxValue;
     }
 
-    void PerlinNoiseContext::shuffle(std::vector<int> *tab)
+    void PerlinNoise::shuffle(std::vector<int> *tab)
     {
         for (int e = tab->size() - 1; e > 0; e--)
         {
@@ -74,9 +74,9 @@ namespace Minicube
         }
     }
 
-    void PerlinNoiseContext::makePermutation()
+    void PerlinNoise::makePermutation(unsigned int seed)
     {
-        srand(time(0));
+        srand(seed);
         for (int i = 0; i < 256; i++)
         {
             P.push_back(i);
@@ -88,7 +88,7 @@ namespace Minicube
         }
     }
 
-    glm::vec2 PerlinNoiseContext::getConstantVector(int v)
+    inline glm::vec2 PerlinNoise::getConstantVector(int v)
     {
         // v is the value from the permutation table
         int h = v % 4;
@@ -102,14 +102,18 @@ namespace Minicube
             return glm::vec2(1.0, -1.0);
     }
 
-    double PerlinNoiseContext::fade(double t)
+    inline double PerlinNoise::fade(double t)
     {
         return ((6 * t - 15) * t + 10) * t * t * t;
     }
 
-    double PerlinNoiseContext::lerp(double t, double a1, double a2)
+    inline double PerlinNoise::lerp(double t, double a1, double a2)
     {
         return a1 + t * (a2 - a1);
+    }
+
+    PerlinNoiseContext::PerlinNoiseContext(int seed) : heightNoise(seed), expNoise(seed * 62), temperatureNoise(seed * 0.8), moutainsNoise(seed << 2)
+    {
     }
 
 } // namespace Minicube
