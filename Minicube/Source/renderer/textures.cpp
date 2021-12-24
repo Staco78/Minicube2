@@ -21,14 +21,14 @@ namespace Minicube
                 if (nrChannels == 3)
                 {
                     glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0,
-                                    0, 0, index,
+                                    0, 0, (int)index,
                                     width, height, 1,
                                     GL_RGB, GL_UNSIGNED_BYTE, data);
                 }
                 else if (nrChannels == 4)
                 {
                     glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0,
-                                    0, 0, index,
+                                    0, 0, (int)index,
                                     width, height, 1,
                                     GL_RGBA, GL_UNSIGNED_BYTE, data);
                 }
@@ -58,8 +58,10 @@ namespace Minicube
                          TEXTURE_SIZE, TEXTURE_SIZE, TEXTURE_COUNT + 1, 0,
                          GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
-            load("grass.png", GRASS);
-            load("stone.png", STONE);
+            load("grass.png", TextureId::GRASS);
+            load("stone.png", TextureId::STONE);
+            load("sand.png", TextureId::SAND);
+            load("blue.png", TextureId::BLUE);
 
             glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
         }

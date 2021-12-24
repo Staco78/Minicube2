@@ -6,17 +6,19 @@
 #include <string>
 
 #define TEXTURE_SIZE 16
-#define TEXTURE_COUNT 2
+#define TEXTURE_COUNT 4
 
 namespace Minicube
 {
     namespace Textures
     {
 
-        enum TextureId
+        enum class TextureId
         {
             GRASS = 1,
-            STONE
+            STONE,
+            SAND,
+            BLUE
         };
 
         void init();

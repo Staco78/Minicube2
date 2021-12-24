@@ -70,7 +70,9 @@ namespace Minicube
     {
         AIR,
         GRASS,
-        STONE
+        STONE,
+        SAND,
+        BLUE
     };
 
     typedef struct
