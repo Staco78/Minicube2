@@ -16,6 +16,7 @@
 #include "utils.h"
 #include "renderer/textures.h"
 #include "gen/worldGen.h"
+#include "block.h"
 
 namespace Minicube
 {
@@ -66,20 +67,6 @@ namespace Minicube
         std::vector<float> *m_data = new std::vector<float>();
     };
 
-    enum BlockId
-    {
-        AIR,
-        GRASS,
-        STONE,
-        SAND,
-        BLUE
-    };
-
-    typedef struct
-    {
-        BlockId id;
-    } Block;
-
     enum ChunkFlags
     {
         CHUNK_FLAG_NEED_INIT = 1,
@@ -103,6 +90,7 @@ namespace Minicube
             m_isConstructing_mutex.unlock();
             free(m_blocks);
             glDeleteVertexArrays(1, &m_VAO);
+            ;
         }
         void draw(const Shader &shader);
         void addBlock(int x, int y, int z, Block &block);
@@ -112,7 +100,7 @@ namespace Minicube
             return m_pos;
         }
 
-        void generate(HeightMap *heightMap);
+        void generate(WorldGen::HeightMap *heightMap);
 
         inline int getFlags() const
         {
@@ -127,6 +115,11 @@ namespace Minicube
         inline void addFlag(int flag)
         {
             m_flags |= flag;
+        }
+
+        inline WorldGen::HeightMap *getHeightMap()
+        {
+            return m_heightMap;
         }
 
         void build();
@@ -154,6 +147,7 @@ namespace Minicube
         unsigned int m_VAO = 0;
         glm::mat4 m_model = glm::mat4(1.0f);
         ChunkMap *m_chunkMap = nullptr;
+        WorldGen::HeightMap *m_heightMap = nullptr;
 
         std::atomic<int> m_flags = CHUNK_FLAG_NEED_INIT;
         std::mutex m_isConstructing_mutex;

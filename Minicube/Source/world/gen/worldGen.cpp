@@ -2,40 +2,68 @@
 
 namespace Minicube
 {
-    BIOME biomeMap[1][1] = {
-        {OCEAN}};
-
-    BIOME getBiome(double height, double humidity, double temperature)
+    namespace WorldGen
     {
-        return VOID;
-    }
 
-    HeightMap::HeightMap(int x, int y, PerlinNoiseContext *perlinNoiseContext)
-    {
-        for (int i = 0; i < 256; i++)
+        HeightMap::HeightMap(int x, int y, PerlinNoiseContext *perlinNoiseContext)
         {
-            double _x = (x * 16 + i / 16.0);
-            double _y = (y * 16 + i % 16);
-            double height = perlinNoiseContext->heightNoise.octavePerlin(_x * 0.0028, _y * 0.0028, 6, 0.45);
-            double exp = perlinNoiseContext->expNoise.octavePerlin(_x * 0.001, _y * 0.001, 2, 0.5);
-
-            height = pow(height * 1.2, exp + 1);
-
-            data[i].biome = VOID;
-
-            if (isnan(height))
+            for (int i = 0; i < 256; i++)
             {
-                height = 0;
+                int _x = (x * 16 + i / 16);
+                int _y = (y * 16 + i % 16);
+                double height = perlinNoiseContext->heightNoise.noise(_x, _y);
+                double humidity = perlinNoiseContext->humidityNoise.noise(_x, _y);
+                double temperature = perlinNoiseContext->temperatureNoise.noise(_x, _y);
+
+                data[i].humidity = humidity;
+                data[i].temperature = temperature;
+
+                double totalHeight = 0.0;
+                double totalWeight = 0.0;
+
+                BIOME mainBiome;
+                double maxWeight = 0.0;
+
+                for (int j = 0; j < BIOME_COUNT; j++)
+                {
+                    BiomeData biome = biomes[j];
+                    double weight = 0.0;
+                    if (humidity >= biome.startHumidity && humidity <= biome.endHumidity && temperature >= biome.startTemperature && temperature <= biome.endTemperature)
+                    {
+                        weight = 1.0;
+                    }
+                    else
+                    {
+                        double dx = std::min(abs(biome.startHumidity - humidity), abs(biome.endHumidity - humidity));
+                        double dy = std::min(abs(biome.startTemperature - temperature), abs(biome.endTemperature - temperature));
+                        double distance = std::min(dx, dy);
+                        if (distance < 0.03)
+                        {
+                            distance *= 33.3;
+                            distance = 1.0 - distance;
+                            weight = 6 * (distance * distance * distance * distance * distance) - 15 * (distance * distance * distance * distance) + 10 * (distance * distance * distance);
+                        }
+                    }
+                    if (weight >= maxWeight)
+                    {
+                        maxWeight = weight;
+                        mainBiome = (BIOME)j;
+                    }
+                    totalWeight += weight;
+                    totalHeight += pow(height, biome.exp) * biome.scale * weight;
+
+                    data[i].biomes[j].biome = (BIOME)j;
+                    data[i].biomes[j].weight = weight;
+                }
+
+                totalHeight /= totalWeight;
+                data[i].height = totalHeight * 80 + 30;
+                data[i].blockId = biomes[mainBiome].block;
+
+                if (data[i].height > maxHeight)
+                    maxHeight = data[i].height;
             }
-
-            data[i].height = height * 100 + 30;
-
-            assert(data[i].height >= 30);
-
-            if (data[i].height > maxHeight)
-                maxHeight = data[i].height;
         }
+    } // namespace WorldGen
 
-        // std::cout << maxHeight << std::endl;
-    }
 } // namespace Minicube

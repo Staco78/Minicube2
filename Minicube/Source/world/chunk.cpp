@@ -188,31 +188,31 @@ namespace Minicube
 
     Block *Chunk::getBlock(int x, int y, int z)
     {
-        Block *ret = &m_blocks[getBlockIndex(x, y, z)];
-        return ret;
+        return &m_blocks[getBlockIndex(x, y, z)];
     }
 
-    void Chunk::generate(HeightMap *heightMap)
+    void Chunk::generate(WorldGen::HeightMap *heightMap)
     {
         if (m_flags & CHUNK_FLAG_IS_GENERATED)
         {
             return;
         }
 
+        m_heightMap = heightMap;
         m_blocks = (Block *)calloc(16 * 16 * 16, sizeof(Block));
         for (int x = 0; x < 16; x++)
         {
             for (int z = 0; z < 16; z++)
             {
-                HeightMapData data = heightMap->data[x * 16 + z];
+                WorldGen::HeightMapData data = heightMap->data[x * 16 + z];
                 int height = data.height;
                 if (height > (m_pos.y + 1) * 16)
                     for (int y = 0; y < 16; y++)
-                        m_blocks[getBlockIndex(x, y, z)].id = BlockId::STONE;
+                        m_blocks[getBlockIndex(x, y, z)].id = data.blockId;
                 else
                 {
                     for (int y = 0; y < height - m_pos.y * 16; y++)
-                        m_blocks[getBlockIndex(x, y, z)].id = BlockId::STONE;
+                        m_blocks[getBlockIndex(x, y, z)].id = data.blockId;
                 }
             }
         }
@@ -262,27 +262,8 @@ namespace Minicube
         if (chunk == nullptr)
             return nullptr;
 
-        if (_x % 16 == 0)
-            x = 0;
-        else if (_x >= 0)
-            x = _x % 16;
-        else
-            x = 16 + (_x % 16);
+        glm::uvec3 blockPos = utils::getBlockOffset(_x, _y, _z);
 
-        if (_y % 16 == 0)
-            y = 0;
-        else if (_y >= 0)
-            y = _y % 16;
-        else
-            y = 16 + (_y % 16);
-
-        if (_z % 16 == 0)
-            z = 0;
-        else if (_z >= 0)
-            z = _z % 16;
-        else
-            z = 16 + (_z % 16);
-
-        return chunk->getBlock(x, y, z);
+        return chunk->getBlock(blockPos.x, blockPos.y, blockPos.z);
     }
 } // namespace Minicube

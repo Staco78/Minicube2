@@ -3,9 +3,12 @@
 namespace Minicube
 {
 
-    PerlinNoise::PerlinNoise(unsigned int seed)
+    PerlinNoise::PerlinNoise(unsigned int seed, double multiplier, unsigned int octaves, double persistence)
     {
         makePermutation(seed);
+        m_multiplier = multiplier;
+        m_octaves = octaves;
+        m_persistence = persistence;
     }
 
     double PerlinNoise::perlin(double x, double y)
@@ -37,8 +40,8 @@ namespace Minicube
 
         double n = lerp(u, lerp(v, dotBottomLeft, dotTopLeft), lerp(v, dotBottomRight, dotTopRight));
 
-        n += 0.5;
-        // n /= 2.0;
+        n += 1;
+        n /= 2.0;
 
         return n;
     }
@@ -60,6 +63,11 @@ namespace Minicube
         }
 
         return total / maxValue;
+    }
+
+    double PerlinNoise::noise(int x, int y)
+    {
+        return octavePerlin(x * m_multiplier, y * m_multiplier, m_octaves, m_persistence);
     }
 
     void PerlinNoise::shuffle(std::vector<int> *tab)
@@ -112,7 +120,7 @@ namespace Minicube
         return a1 + t * (a2 - a1);
     }
 
-    PerlinNoiseContext::PerlinNoiseContext(int seed) : heightNoise(seed), expNoise(seed * 62), temperatureNoise(seed * 0.8), moutainsNoise(seed << 2)
+    PerlinNoiseContext::PerlinNoiseContext(int seed) : heightNoise(seed, 0.0028, 6, 0.45), humidityNoise(seed * 62, 0.001, 2, 0.5), temperatureNoise(seed * 0.8, 0.001, 2, 0.5)
     {
     }
 

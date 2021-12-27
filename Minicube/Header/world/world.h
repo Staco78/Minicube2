@@ -11,6 +11,7 @@
 #include "chunk.h"
 #include "camera.h"
 #include "gen/worldGen.h"
+#include "heightMaps.h"
 
 namespace Minicube
 {
@@ -29,8 +30,23 @@ namespace Minicube
             return &m_chunks;
         }
 
+        WorldGen::HeightMapData *getHeightMapData(const glm::ivec2 &pos)
+        {
+            Chunk *chunk = getChunk(glm::ivec3(pos.x / 16, 0, pos.y / 16));
+            if (chunk == nullptr)
+                return nullptr;
+
+            WorldGen::HeightMap *heightMap = chunk->getHeightMap();
+            if (heightMap == nullptr)
+                return nullptr;
+
+            glm::uvec3 blockOffset = utils::getBlockOffset(pos.x, 0, pos.y);
+            return &heightMap->data[blockOffset.x * 16 + blockOffset.z];
+        }
+
     private:
         ChunkMap m_chunks;
+        HeightMaps m_heightMaps;
         Camera *m_camera = nullptr;
         void updateChunksThread();
         void generateChunksThread();

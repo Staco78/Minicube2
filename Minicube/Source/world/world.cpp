@@ -19,13 +19,14 @@ namespace Minicube
             {
                 if (getChunk(glm::ivec3(x, 0, z)) == nullptr)
                 {
-                    HeightMap heightMap(x, z, &m_perlinNoiseContext);
-                    int nbChunks = heightMap.maxHeight / 16 + 1;
+                    WorldGen::HeightMap *heightMap = m_heightMaps.add(glm::ivec2(x, z), &m_perlinNoiseContext);
+                    int nbChunks = heightMap->maxHeight / 16 + 1;
+                    m_heightMaps.setUses(glm::ivec2(x, z), nbChunks);
                     for (int y = 0; y < nbChunks; y++)
                     {
                         glm::ivec3 pos(x, y, z);
                         Chunk *chunk = new Chunk(&m_chunks, pos);
-                        chunk->generate(&heightMap);
+                        chunk->generate(heightMap);
                         m_chunks.set(pos, chunk);
                     }
                 }
@@ -55,6 +56,7 @@ namespace Minicube
                     it++;
                 else
                 {
+                    m_heightMaps.erase(glm::ivec2(it->first.x, it->first.z));
                     delete it->second;
                     it = m_chunks.erase(it);
                 }
@@ -92,7 +94,7 @@ namespace Minicube
             for (unsigned int i = 0; i < chunks.size(); i++)
             {
 
-                if ((i % 100 == 0 && i != 0) || lastChunkMapSize == 0)
+                if ((i % 10 == 0 && i != 0) || lastChunkMapSize == 0)
                 {
                     glm::ivec3 camPos = m_camera->getPosition();
                     glm::vec2 playerChunkPos = glm::vec2(camPos.x / 16, camPos.z / 16);
