@@ -58,10 +58,13 @@ namespace Minicube
                          TEXTURE_SIZE, TEXTURE_SIZE, TEXTURE_COUNT + 1, 0,
                          GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
-            load("grass.png", TextureId::GRASS);
+            load("grass_top.png", TextureId::GRASS_TOP);
+            load("grass_side.png", TextureId::GRASS_SIDE);
             load("stone.png", TextureId::STONE);
             load("sand.png", TextureId::SAND);
             load("blue.png", TextureId::BLUE);
+            load("dirt.png", TextureId::DIRT);
+            load("snow.png", TextureId::SNOW);
 
             glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
         }
@@ -70,6 +73,7 @@ namespace Minicube
         {
             return ID;
         }
+
     } // namespace Textures
 
 } // namespace Minicube

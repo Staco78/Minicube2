@@ -57,9 +57,30 @@ namespace Minicube
         }
     }
 
-    inline void Chunk::addBlock(int x, int y, int z, Block &block)
+    inline void Chunk::addBlock(unsigned int x, unsigned int y, unsigned int z, Blocks::BlockId id)
     {
-        m_blocks[getBlockIndex(x, y, z)] = block;
+        void *addr = (void *)&m_blocks[getBlockIndex(x, y, z)];
+        switch (id)
+        {
+        case Blocks::GRASS:
+            new (addr) Blocks::Grass(id);
+            break;
+        case Blocks::DIRT:
+            new (addr) Blocks::Dirt(id);
+            break;
+        case Blocks::STONE:
+            new (addr) Blocks::Stone(id);
+            break;
+        case Blocks::SAND:
+            new (addr) Blocks::Sand(id);
+            break;
+        case Blocks::BLUE:
+            new (addr) Blocks::Blue(id);
+            break;
+        default:
+            assert(false);
+            break;
+        }
     }
 
     void Chunk::build()
@@ -80,7 +101,6 @@ namespace Minicube
 
     void Chunk::constructVBO()
     {
-        // std::cout << "constructing VBO " << m_pos.x << " " << m_pos.y << " " << m_pos.z << "\n";
         m_isConstructing_mutex.lock();
         glm::uvec3 pos;
         for (int i = 0; i < 16 * 16 * 16; i++)
@@ -94,14 +114,14 @@ namespace Minicube
             block = getBlockInWorld(pos.x, pos.y, pos.z + 1);
             if (block == nullptr || block->id == 0)
             {
-                for (unsigned int y = 0; y < Minicube::Vertices::cube::back.size(); y += 5)
+                for (unsigned int y = 0; y < Minicube::Vertices::cube::south.size(); y += 5)
                 {
-                    m_VBO.push_back(Minicube::Vertices::cube::back.at(y) + pos.x);
-                    m_VBO.push_back(Minicube::Vertices::cube::back.at(y + 1) + pos.y);
-                    m_VBO.push_back(Minicube::Vertices::cube::back.at(y + 2) + pos.z);
-                    m_VBO.push_back(Minicube::Vertices::cube::back.at(y + 3));
-                    m_VBO.push_back(Minicube::Vertices::cube::back.at(y + 4));
-                    m_VBO.push_back(m_blocks[i].id);
+                    m_VBO.push_back(Minicube::Vertices::cube::south.at(y) + pos.x);
+                    m_VBO.push_back(Minicube::Vertices::cube::south.at(y + 1) + pos.y);
+                    m_VBO.push_back(Minicube::Vertices::cube::south.at(y + 2) + pos.z);
+                    m_VBO.push_back(Minicube::Vertices::cube::south.at(y + 3));
+                    m_VBO.push_back(Minicube::Vertices::cube::south.at(y + 4));
+                    m_VBO.push_back((float)m_blocks[i].getTexture(utils::Direction::SOUTH));
                     m_VBO.push_back(0.0f);
                 }
             }
@@ -109,14 +129,14 @@ namespace Minicube
             block = getBlockInWorld(pos.x, pos.y, pos.z - 1);
             if (block == nullptr || block->id == 0)
             {
-                for (unsigned int y = 0; y < Minicube::Vertices::cube::front.size(); y += 5)
+                for (unsigned int y = 0; y < Minicube::Vertices::cube::north.size(); y += 5)
                 {
-                    m_VBO.push_back(Minicube::Vertices::cube::front.at(y) + pos.x);
-                    m_VBO.push_back(Minicube::Vertices::cube::front.at(y + 1) + pos.y);
-                    m_VBO.push_back(Minicube::Vertices::cube::front.at(y + 2) + pos.z);
-                    m_VBO.push_back(Minicube::Vertices::cube::front.at(y + 3));
-                    m_VBO.push_back(Minicube::Vertices::cube::front.at(y + 4));
-                    m_VBO.push_back(m_blocks[i].id);
+                    m_VBO.push_back(Minicube::Vertices::cube::north.at(y) + pos.x);
+                    m_VBO.push_back(Minicube::Vertices::cube::north.at(y + 1) + pos.y);
+                    m_VBO.push_back(Minicube::Vertices::cube::north.at(y + 2) + pos.z);
+                    m_VBO.push_back(Minicube::Vertices::cube::north.at(y + 3));
+                    m_VBO.push_back(Minicube::Vertices::cube::north.at(y + 4));
+                    m_VBO.push_back((float)m_blocks[i].getTexture(utils::Direction::NORTH));
                     m_VBO.push_back(1.0f);
                 }
             }
@@ -124,14 +144,14 @@ namespace Minicube
             block = getBlockInWorld(pos.x, pos.y + 1, pos.z);
             if (block == nullptr || block->id == 0)
             {
-                for (unsigned int y = 0; y < Minicube::Vertices::cube::top.size(); y += 5)
+                for (unsigned int y = 0; y < Minicube::Vertices::cube::up.size(); y += 5)
                 {
-                    m_VBO.push_back(Minicube::Vertices::cube::top.at(y) + pos.x);
-                    m_VBO.push_back(Minicube::Vertices::cube::top.at(y + 1) + pos.y);
-                    m_VBO.push_back(Minicube::Vertices::cube::top.at(y + 2) + pos.z);
-                    m_VBO.push_back(Minicube::Vertices::cube::top.at(y + 3));
-                    m_VBO.push_back(Minicube::Vertices::cube::top.at(y + 4));
-                    m_VBO.push_back(m_blocks[i].id);
+                    m_VBO.push_back(Minicube::Vertices::cube::up.at(y) + pos.x);
+                    m_VBO.push_back(Minicube::Vertices::cube::up.at(y + 1) + pos.y);
+                    m_VBO.push_back(Minicube::Vertices::cube::up.at(y + 2) + pos.z);
+                    m_VBO.push_back(Minicube::Vertices::cube::up.at(y + 3));
+                    m_VBO.push_back(Minicube::Vertices::cube::up.at(y + 4));
+                    m_VBO.push_back((float)m_blocks[i].getTexture(utils::Direction::UP));
                     m_VBO.push_back(4.0f);
                 }
             }
@@ -139,14 +159,14 @@ namespace Minicube
             block = getBlockInWorld(pos.x, pos.y - 1, pos.z);
             if (block == nullptr || block->id == 0)
             {
-                for (unsigned int y = 0; y < Minicube::Vertices::cube::bottom.size(); y += 5)
+                for (unsigned int y = 0; y < Minicube::Vertices::cube::down.size(); y += 5)
                 {
-                    m_VBO.push_back(Minicube::Vertices::cube::bottom.at(y) + pos.x);
-                    m_VBO.push_back(Minicube::Vertices::cube::bottom.at(y + 1) + pos.y);
-                    m_VBO.push_back(Minicube::Vertices::cube::bottom.at(y + 2) + pos.z);
-                    m_VBO.push_back(Minicube::Vertices::cube::bottom.at(y + 3));
-                    m_VBO.push_back(Minicube::Vertices::cube::bottom.at(y + 4));
-                    m_VBO.push_back(m_blocks[i].id);
+                    m_VBO.push_back(Minicube::Vertices::cube::down.at(y) + pos.x);
+                    m_VBO.push_back(Minicube::Vertices::cube::down.at(y + 1) + pos.y);
+                    m_VBO.push_back(Minicube::Vertices::cube::down.at(y + 2) + pos.z);
+                    m_VBO.push_back(Minicube::Vertices::cube::down.at(y + 3));
+                    m_VBO.push_back(Minicube::Vertices::cube::down.at(y + 4));
+                    m_VBO.push_back((float)m_blocks[i].getTexture(utils::Direction::DOWN));
                     m_VBO.push_back(5.0f);
                 }
             }
@@ -154,14 +174,14 @@ namespace Minicube
             block = getBlockInWorld(pos.x + 1, pos.y, pos.z);
             if (block == nullptr || block->id == 0)
             {
-                for (unsigned int y = 0; y < Minicube::Vertices::cube::left.size(); y += 5)
+                for (unsigned int y = 0; y < Minicube::Vertices::cube::east.size(); y += 5)
                 {
-                    m_VBO.push_back(Minicube::Vertices::cube::left.at(y) + pos.x);
-                    m_VBO.push_back(Minicube::Vertices::cube::left.at(y + 1) + pos.y);
-                    m_VBO.push_back(Minicube::Vertices::cube::left.at(y + 2) + pos.z);
-                    m_VBO.push_back(Minicube::Vertices::cube::left.at(y + 3));
-                    m_VBO.push_back(Minicube::Vertices::cube::left.at(y + 4));
-                    m_VBO.push_back(m_blocks[i].id);
+                    m_VBO.push_back(Minicube::Vertices::cube::east.at(y) + pos.x);
+                    m_VBO.push_back(Minicube::Vertices::cube::east.at(y + 1) + pos.y);
+                    m_VBO.push_back(Minicube::Vertices::cube::east.at(y + 2) + pos.z);
+                    m_VBO.push_back(Minicube::Vertices::cube::east.at(y + 3));
+                    m_VBO.push_back(Minicube::Vertices::cube::east.at(y + 4));
+                    m_VBO.push_back((float)m_blocks[i].getTexture(utils::Direction::EAST));
                     m_VBO.push_back(2.0f);
                 }
             }
@@ -169,26 +189,20 @@ namespace Minicube
             block = getBlockInWorld(pos.x - 1, pos.y, pos.z);
             if (block == nullptr || block->id == 0)
             {
-                for (unsigned int y = 0; y < Minicube::Vertices::cube::right.size(); y += 5)
+                for (unsigned int y = 0; y < Minicube::Vertices::cube::west.size(); y += 5)
                 {
-                    m_VBO.push_back(Minicube::Vertices::cube::right.at(y) + pos.x);
-                    m_VBO.push_back(Minicube::Vertices::cube::right.at(y + 1) + pos.y);
-                    m_VBO.push_back(Minicube::Vertices::cube::right.at(y + 2) + pos.z);
-                    m_VBO.push_back(Minicube::Vertices::cube::right.at(y + 3));
-                    m_VBO.push_back(Minicube::Vertices::cube::right.at(y + 4));
-                    m_VBO.push_back(m_blocks[i].id);
+                    m_VBO.push_back(Minicube::Vertices::cube::west.at(y) + pos.x);
+                    m_VBO.push_back(Minicube::Vertices::cube::west.at(y + 1) + pos.y);
+                    m_VBO.push_back(Minicube::Vertices::cube::west.at(y + 2) + pos.z);
+                    m_VBO.push_back(Minicube::Vertices::cube::west.at(y + 3));
+                    m_VBO.push_back(Minicube::Vertices::cube::west.at(y + 4));
+                    m_VBO.push_back((float)m_blocks[i].getTexture(utils::Direction::WEST));
                     m_VBO.push_back(3.0f);
                 }
             }
         }
 
         m_isConstructing_mutex.unlock();
-        m_flags &= ~CHUNK_FLAG_NEED_REBUILD;
-    }
-
-    Block *Chunk::getBlock(int x, int y, int z)
-    {
-        return &m_blocks[getBlockIndex(x, y, z)];
     }
 
     void Chunk::generate(WorldGen::HeightMap *heightMap)
@@ -200,19 +214,23 @@ namespace Minicube
 
         m_heightMap = heightMap;
         m_blocks = (Block *)calloc(16 * 16 * 16, sizeof(Block));
+
         for (int x = 0; x < 16; x++)
         {
             for (int z = 0; z < 16; z++)
             {
                 WorldGen::HeightMapData data = heightMap->data[x * 16 + z];
-                int height = data.height;
-                if (height > (m_pos.y + 1) * 16)
-                    for (int y = 0; y < 16; y++)
-                        m_blocks[getBlockIndex(x, y, z)].id = data.blockId;
-                else
+                for (int y = m_pos.y * 16; y < (m_pos.y + 1) * 16; y++)
                 {
-                    for (int y = 0; y < height - m_pos.y * 16; y++)
-                        m_blocks[getBlockIndex(x, y, z)].id = data.blockId;
+                    int diff = data.height - y;
+                    if (diff < 0)
+                        break;
+                    if (diff == 0)
+                        addBlock(x, y - m_pos.y * 16, z, WorldGen::biomes[data.biome].block);
+                    else if (diff < 3)
+                        addBlock(x, y - m_pos.y * 16, z, Blocks::DIRT);
+                    else
+                        addBlock(x, y - m_pos.y * 16, z, Blocks::STONE);
                 }
             }
         }

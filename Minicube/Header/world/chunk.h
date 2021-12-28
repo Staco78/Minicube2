@@ -16,7 +16,7 @@
 #include "utils.h"
 #include "renderer/textures.h"
 #include "gen/worldGen.h"
-#include "block.h"
+#include "blocks.h"
 
 namespace Minicube
 {
@@ -93,8 +93,13 @@ namespace Minicube
             ;
         }
         void draw(const Shader &shader);
-        void addBlock(int x, int y, int z, Block &block);
-        Block *getBlock(int x, int y, int z);
+        inline void addBlock(unsigned int x, unsigned int y, unsigned int z, Blocks::BlockId id);
+        inline Block *getBlock(unsigned int x, unsigned int y, unsigned int z)
+        {
+            return &m_blocks[getBlockIndex(x, y, z)];
+        }
+        void build();
+
         inline const glm::ivec3 &getPos() const
         {
             return m_pos;
@@ -121,8 +126,6 @@ namespace Minicube
         {
             return m_heightMap;
         }
-
-        void build();
 
     private:
         void constructVBO();

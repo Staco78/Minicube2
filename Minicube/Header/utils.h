@@ -1,4 +1,8 @@
+#pragma once
+
 #include <vector>
+
+#include <Glm/glm.hpp>
 
 namespace Minicube
 {
@@ -30,6 +34,21 @@ namespace Minicube
             return glm::uvec3(x, y, z);
         }
 
+        enum class Direction
+        {
+            NORTH = 1,
+            SOUTH = 2,
+            EAST = 4,
+            WEST = 8,
+            UP = 16,
+            DOWN = 32,
+            Y_AXIS = 48,
+            X_AXIS = 3,
+            Z_AXIS = 12,
+            HORIZONTAL = 15,
+            ALL = 63
+        };
+
     } // namespace utils
 
     namespace Vertices
@@ -37,7 +56,7 @@ namespace Minicube
         namespace cube
         {
 
-            static std::vector<float> back = {
+            static std::vector<float> south = {
                 // Back face
                 -0.5f, -0.5f, 0.5f, 1.0f, 1.0f, // Bottom-left
                 0.5f, -0.5f, 0.5f, 0.0f, 1.0f,  // bottom-right
@@ -46,7 +65,7 @@ namespace Minicube
                 -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,  // top-left
                 -0.5f, -0.5f, 0.5f, 1.0f, 1.0f, // bottom-left
             };
-            static std::vector<float> front = {
+            static std::vector<float> north = {
                 // Front face
                 -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, // bottom-left
                 0.5f, 0.5f, -0.5f, 0.0f, 0.0f,   // top-right
@@ -55,7 +74,7 @@ namespace Minicube
                 -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, // bottom-left
                 -0.5f, 0.5f, -0.5f, 1.0f, 0.0f,  // top-left
             };
-            static std::vector<float> left = {
+            static std::vector<float> east = {
                 // Left face
                 0.5f, 0.5f, 0.5f, 0.0f, 0.0f,   // top-right
                 0.5f, -0.5f, -0.5f, 1.0f, 1.0f, // bottom-left
@@ -64,7 +83,7 @@ namespace Minicube
                 0.5f, 0.5f, 0.5f, 0.0f, 0.0f,   // top-right
                 0.5f, -0.5f, 0.5f, 0.0f, 1.0f,  // bottom-right
             };
-            static std::vector<float> right = {
+            static std::vector<float> west = {
                 // Right face
                 -0.5f, 0.5f, -0.5f, 0.0f, 0.0f,  // top-right
                 -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-right
@@ -73,7 +92,7 @@ namespace Minicube
                 -0.5f, -0.5f, 0.5f, 1.0f, 1.0f,  // bottom-left
                 -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,   // top-left
             };
-            static std::vector<float> bottom = {
+            static std::vector<float> down = {
                 // Bottom face
                 -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // top-right
                 0.5f, -0.5f, -0.5f, 1.0f, 1.0f,  // top-left
@@ -82,7 +101,7 @@ namespace Minicube
                 -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,  // bottom-right
                 -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // top-right
             };
-            static std::vector<float> top = {
+            static std::vector<float> up = {
                 // Top face
                 -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, // top-left
                 0.5f, 0.5f, 0.5f, 1.0f, 0.0f,   // bottom-right

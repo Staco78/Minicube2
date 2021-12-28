@@ -15,9 +15,6 @@ namespace Minicube
                 double humidity = perlinNoiseContext->humidityNoise.noise(_x, _y);
                 double temperature = perlinNoiseContext->temperatureNoise.noise(_x, _y);
 
-                data[i].humidity = humidity;
-                data[i].temperature = temperature;
-
                 double totalHeight = 0.0;
                 double totalWeight = 0.0;
 
@@ -37,9 +34,9 @@ namespace Minicube
                         double dx = std::min(abs(biome.startHumidity - humidity), abs(biome.endHumidity - humidity));
                         double dy = std::min(abs(biome.startTemperature - temperature), abs(biome.endTemperature - temperature));
                         double distance = std::min(dx, dy);
-                        if (distance < 0.03)
+                        if (distance < 0.2)
                         {
-                            distance *= 33.3;
+                            distance *= 5.0;
                             distance = 1.0 - distance;
                             weight = 6 * (distance * distance * distance * distance * distance) - 15 * (distance * distance * distance * distance) + 10 * (distance * distance * distance);
                         }
@@ -51,14 +48,11 @@ namespace Minicube
                     }
                     totalWeight += weight;
                     totalHeight += pow(height, biome.exp) * biome.scale * weight;
-
-                    data[i].biomes[j].biome = (BIOME)j;
-                    data[i].biomes[j].weight = weight;
                 }
 
                 totalHeight /= totalWeight;
                 data[i].height = totalHeight * 80 + 30;
-                data[i].blockId = biomes[mainBiome].block;
+                data[i].biome = mainBiome;
 
                 if (data[i].height > maxHeight)
                     maxHeight = data[i].height;

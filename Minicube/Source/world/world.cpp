@@ -5,6 +5,7 @@ namespace Minicube
     World::World(Camera *camera) : m_perlinNoiseContext(time(0))
     {
         m_camera = camera;
+        // Blocks::init();
     }
 
     void World::updateVisibleChunks()
@@ -159,9 +160,9 @@ namespace Minicube
 
         Chunk *chunk = getChunk(glm::ivec3(x / 16, y / 16, z / 16));
 
-        int _x;
-        int _y;
-        int _z;
+        unsigned int _x;
+        unsigned int _y;
+        unsigned int _z;
 
         if (x % 16 == 0)
             _x = 0;

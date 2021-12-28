@@ -37,6 +37,7 @@ namespace Minicube
         PerlinNoise heightNoise;
         PerlinNoise humidityNoise;
         PerlinNoise temperatureNoise;
+        PerlinNoise r;
     };
 
 } // namespace Minicube
