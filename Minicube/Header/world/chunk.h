@@ -31,18 +31,26 @@ namespace Minicube
         void sendData()
         {
             m_mutex.lock();
-            size = m_data->size();
+            size = m_data.size();
             glBindBuffer(GL_ARRAY_BUFFER, ID);
-            glBufferData(GL_ARRAY_BUFFER, size * sizeof(float), m_data->data(), GL_STATIC_DRAW);
-            delete m_data;
-            m_data = new std::vector<float>();
+            glBufferData(GL_ARRAY_BUFFER, size * sizeof(float), m_data.data(), GL_STATIC_DRAW);
+            m_data.clear();
+            m_data.shrink_to_fit();
+            m_mutex.unlock();
+        }
+
+        inline void clear()
+        {
+            m_mutex.lock();
+            m_data.clear();
+            m_data.shrink_to_fit();
             m_mutex.unlock();
         }
 
         inline void push_back(float data)
         {
             m_mutex.lock();
-            m_data->push_back(data);
+            m_data.push_back(data);
             m_mutex.unlock();
         }
 
@@ -54,7 +62,6 @@ namespace Minicube
         ~DynamicVBO()
         {
             glDeleteBuffers(1, &ID);
-            delete m_data;
         }
 
         inline unsigned int getTrianglesCount() { return (getSize() / 5); }
@@ -64,7 +71,7 @@ namespace Minicube
         size_t size = 0;
         std::mutex m_mutex;
         unsigned int ID = 0;
-        std::vector<float> *m_data = new std::vector<float>();
+        std::vector<float> m_data;
     };
 
     enum ChunkFlags
@@ -90,7 +97,6 @@ namespace Minicube
             m_isConstructing_mutex.unlock();
             free(m_blocks);
             glDeleteVertexArrays(1, &m_VAO);
-            ;
         }
         void draw(const Shader &shader);
         inline void addBlock(unsigned int x, unsigned int y, unsigned int z, Blocks::BlockId id);

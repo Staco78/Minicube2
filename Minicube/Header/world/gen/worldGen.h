@@ -28,7 +28,7 @@ namespace Minicube
             TAIGA,
             TUNDRA,
             ICE,
-            MOUNTAIN
+            MOUNTAINS
         };
 
         static char *biomeNames[BIOME_COUNT] = {
@@ -60,20 +60,20 @@ namespace Minicube
         };
 
         static BiomeData biomes[BIOME_COUNT] = {
-            { Blocks::SAND, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0 }, // OCEAN
-            { Blocks::SAND, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0 }, // RIVER
-            { Blocks::SAND, 1.3, 0.8, 0.0, 0.0, 0.0, 0.0 }, // BEACH
-            { Blocks::SAND, 1.2, 0.6, 0.0, 0.3, 0.6, 1.0 }, // DESERT
-            { Blocks::GRASS, 1.0, 1.0, 0.3, 0.6, 0.6, 1.0 }, // SAVANNA
-            { Blocks::GRASS, 1.0, 1.0, 0.6, 1.0, 0.6, 1.0 }, // JUNGLE
-            { Blocks::GRASS, 1.0, 1.0, 0.0, 0.3, 0.3, 0.6 }, // GRASSLAND
-            { Blocks::GRASS, 1.0, 1.0, 0.3, 0.6, 0.3, 0.6 }, // WOODLAND
-            { Blocks::GRASS, 1.0, 1.0, 0.6, 0.7, 0.5, 0.6 }, // FOREST
-            { Blocks::GRASS, 1.0, 1.0, 0.7, 1.0, 0.5, 0.6 }, // RAINFOREST
-            { Blocks::GRASS, 1.0, 1.0, 0.5, 1.0, 0.18, 0.4 }, // TAIGA
-            { Blocks::GRASS, 1.0, 1.0, 0.5, 1.0, 0.05, 0.18 }, // TUNDRA
-            { Blocks::GRASS, 1.0, 1.0, 0.0, 1.0, 0.0, 0.05 }, // ICE
-            { Blocks::STONE, 3.0, 1.2, 0.0, 0.0, 0.0, 0.0 }, // MOUNTAIN
+            {Blocks::SAND, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0},    // OCEAN
+            {Blocks::SAND, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0},    // RIVER
+            {Blocks::SAND, 1.3, 0.8, 0.0, 0.0, 0.0, 0.0},    // BEACH
+            {Blocks::SAND, 1.2, 0.7, 0.0, 0.3, 0.6, 1.0},    // DESERT
+            {Blocks::GRASS, 1.0, 1.0, 0.3, 0.6, 0.6, 1.0},   // SAVANNA
+            {Blocks::GRASS, 1.0, 1.0, 0.6, 1.0, 0.6, 1.0},   // JUNGLE
+            {Blocks::GRASS, 1.0, 1.0, 0.0, 0.3, 0.3, 0.6},   // GRASSLAND
+            {Blocks::GRASS, 1.0, 1.0, 0.3, 0.6, 0.3, 0.6},   // WOODLAND
+            {Blocks::GRASS, 1.0, 1.0, 0.6, 0.7, 0.5, 0.6},   // FOREST
+            {Blocks::GRASS, 1.0, 1.0, 0.7, 1.0, 0.5, 0.6},   // RAINFOREST
+            {Blocks::GRASS, 1.0, 1.0, 0.5, 1.0, 0.18, 0.4},  // TAIGA
+            {Blocks::GRASS, 1.0, 1.0, 0.5, 1.0, 0.05, 0.18}, // TUNDRA
+            {Blocks::GRASS, 1.0, 1.0, 0.0, 1.0, 0.0, 0.05},  // ICE
+            {Blocks::STONE, 3.5, 3.8, 0.0, 0.0, 0.0, 0.0},   // MOUNTAINS
         };
 
         struct BiomeNear
@@ -85,8 +85,11 @@ namespace Minicube
         struct HeightMapData
         {
             unsigned int height;
-            // BiomeNear biomes[BIOME_COUNT];
+            BiomeNear biomes[BIOME_COUNT];
             BIOME biome;
+            double temperature;
+            double humidity;
+            double moutains;
         };
 
         class HeightMap

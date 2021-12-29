@@ -124,7 +124,7 @@ namespace Minicube
     PerlinNoiseContext::PerlinNoiseContext(int seed) : heightNoise(seed++, 0.0028, 5, 0.45),
                                                        humidityNoise(seed++, 0.0007, 5, 0.3),
                                                        temperatureNoise(seed++, 0.0007, 5, 0.3),
-                                                       r(seed++, 1.0 / 512.0, 1, 0.0)
+                                                       moutainsNoise(seed++, 0.0007, 5, 0.3)
     {
     }
 

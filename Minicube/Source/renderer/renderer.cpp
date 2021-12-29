@@ -110,17 +110,21 @@ namespace Minicube
         text::draw2DText(std::to_string(fps), 10, m_window.getSize().y - 26);
         glm::ivec3 playerPos = m_camera->getPosition();
         text::draw2DText(std::to_string(playerPos.x) + " " + std::to_string(playerPos.y) + " " + std::to_string(playerPos.z), 10, m_window.getSize().y - 50);
-        text::draw2DText(std::to_string(m_world->getChunkMap()->size()), 10, m_window.getSize().y - 74);
+
+        glm::ivec3 playerChunkPos = glm::ivec3(playerPos.x / 16, playerPos.y / 16, playerPos.z / 16);
+        text::draw2DText(std::to_string(playerChunkPos.x) + " " + std::to_string(playerChunkPos.y) + " " + std::to_string(playerChunkPos.z), 10, m_window.getSize().y - 74);
+
+        text::draw2DText(std::to_string(m_world->getChunkMap()->size()), 10, m_window.getSize().y - 98);
 
         WorldGen::HeightMapData *heightMap = m_world->getHeightMapData(glm::ivec2(playerPos.x, playerPos.z));
         if (heightMap != nullptr)
         {
-            // for (int i = 0; i < BIOME_COUNT; i++)
-            //     text::draw2DText(std::string(WorldGen::biomeNames[heightMap->biomes[i].biome]) + " " + std::to_string(int(heightMap->biomes[i].weight * 100)) + "%", 10, m_window.getSize().y - (98 + i * 24));
+            for (int i = 0; i < BIOME_COUNT; i++)
+                text::draw2DText(std::string(WorldGen::biomeNames[heightMap->biomes[i].biome]) + " " + std::to_string(int(heightMap->biomes[i].weight * 100)) + "%", 10, m_window.getSize().y - (122 + i * 24));
 
-            // text::draw2DText("h: " + std::to_string(heightMap->humidity) + " t: " + std::to_string(heightMap->temperature), 10, m_window.getSize().y - (98 + BIOME_COUNT * 24));
+            text::draw2DText("h: " + std::to_string(heightMap->humidity) + " t: " + std::to_string(heightMap->temperature) + " m: " + std::to_string(heightMap->moutains), 10, m_window.getSize().y - (122 + BIOME_COUNT * 24));
 
-            text::draw2DText(std::string(WorldGen::biomeNames[heightMap->biome]), 10, m_window.getSize().y - 98);
+            text::draw2DText(std::string(WorldGen::biomeNames[heightMap->biome]), 10, m_window.getSize().y - (146 + BIOME_COUNT * 24));
         }
 
         getWindow()->swapBuffers();

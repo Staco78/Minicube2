@@ -89,14 +89,11 @@ namespace Minicube
         if (m_flags & CHUNK_FLAG_NEED_REBUILD && m_flags & CHUNK_FLAG_IS_GENERATED && !(m_flags & CHUNK_FLAG_NEED_DELETE))
         {
             m_flags &= ~CHUNK_FLAG_NEED_REBUILD;
+            m_VBO.clear();
             constructVBO();
-            m_flags &= ~CHUNK_FLAG_IS_BUILDING;
             m_flags |= CHUNK_FLAG_NEED_SEND_VBO;
         }
-        else
-        {
-            m_flags &= ~CHUNK_FLAG_IS_BUILDING;
-        }
+        m_flags &= ~CHUNK_FLAG_IS_BUILDING;
     }
 
     void Chunk::constructVBO()
