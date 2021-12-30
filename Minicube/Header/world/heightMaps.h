@@ -4,21 +4,6 @@
 
 #include "gen/worldGen.h"
 
-namespace std
-{
-    template <>
-    struct less<glm::ivec2>
-    {
-        bool operator()(const glm::ivec2 &left, const glm::ivec2 &right) const
-        {
-            if (left.x == right.x)
-                return left.y < right.y;
-            else
-                return left.x < right.x;
-        }
-    };
-}
-
 namespace Minicube
 {
     class HeightMaps

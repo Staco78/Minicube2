@@ -5,47 +5,49 @@
 
 #include <iostream>
 #include <cmath>
+#include <map>
+
+namespace std
+{
+    template <>
+    struct less<glm::ivec2>
+    {
+        bool operator()(const glm::ivec2 &left, const glm::ivec2 &right) const
+        {
+            if (left.x == right.x)
+                return left.y < right.y;
+            else
+                return left.x < right.x;
+        }
+    };
+}
 
 namespace Minicube
 {
 
-#define BIOME_COUNT 14
+#define BIOME_COUNT 7
 
     namespace WorldGen
     {
         enum BIOME
         {
-            OCEAN,
-            RIVER,
-            BEACH,
             DESERT,
-            SAVANNA,
-            JUNGLE,
-            GRASSLAND,
-            WOODLAND,
             FOREST,
-            RAINFOREST,
-            TAIGA,
-            TUNDRA,
-            ICE,
-            MOUNTAINS
+            GRASSLAND,
+            JUNGLE,
+            MOUNTAINS,
+            OCEAN,
+            TUNDRA
         };
 
         static char *biomeNames[BIOME_COUNT] = {
-            "Ocean",
-            "River",
-            "Beach",
             "Desert",
-            "Savanna",
-            "Jungle",
-            "Grassland",
-            "Woodland",
             "Forest",
-            "Rainforest",
-            "Taiga",
+            "Grassland",
+            "Jungle",
+            "Mountains",
+            "Ocean",
             "Tundra",
-            "Ice",
-            "Mountain",
         };
 
         struct BiomeData
@@ -53,27 +55,19 @@ namespace Minicube
             Blocks::BlockId block;
             double exp;
             double scale;
-            double startHumidity;
-            double endHumidity;
-            double startTemperature;
-            double endTemperature;
+            double minHeight;
+            double minHumidity;
+            double minTemperature;
         };
 
         static BiomeData biomes[BIOME_COUNT] = {
-            {Blocks::SAND, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0},    // OCEAN
-            {Blocks::SAND, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0},    // RIVER
-            {Blocks::SAND, 1.3, 0.8, 0.0, 0.0, 0.0, 0.0},    // BEACH
-            {Blocks::SAND, 1.2, 0.7, 0.0, 0.3, 0.6, 1.0},    // DESERT
-            {Blocks::GRASS, 1.0, 1.0, 0.3, 0.6, 0.6, 1.0},   // SAVANNA
-            {Blocks::GRASS, 1.0, 1.0, 0.6, 1.0, 0.6, 1.0},   // JUNGLE
-            {Blocks::GRASS, 1.0, 1.0, 0.0, 0.3, 0.3, 0.6},   // GRASSLAND
-            {Blocks::GRASS, 1.0, 1.0, 0.3, 0.6, 0.3, 0.6},   // WOODLAND
-            {Blocks::GRASS, 1.0, 1.0, 0.6, 0.7, 0.5, 0.6},   // FOREST
-            {Blocks::GRASS, 1.0, 1.0, 0.7, 1.0, 0.5, 0.6},   // RAINFOREST
-            {Blocks::GRASS, 1.0, 1.0, 0.5, 1.0, 0.18, 0.4},  // TAIGA
-            {Blocks::GRASS, 1.0, 1.0, 0.5, 1.0, 0.05, 0.18}, // TUNDRA
-            {Blocks::GRASS, 1.0, 1.0, 0.0, 1.0, 0.0, 0.05},  // ICE
-            {Blocks::STONE, 3.5, 3.8, 0.0, 0.0, 0.0, 0.0},   // MOUNTAINS
+            {Blocks::BlockId::SAND, 0.8, 0.8, 0.2, 0.0, 0.5},  // Desert
+            {Blocks::BlockId::GRASS, 1.0, 1.0, 0.2, 0.4, 0.4}, // Forest
+            {Blocks::BlockId::GRASS, 1.0, 1.0, 0.2, 0.5, 0.3}, // Grassland
+            {Blocks::BlockId::GRASS, 1.2, 1.2, 0.3, 0.5, 0.6}, // Jungle
+            {Blocks::BlockId::STONE, 3.0, 3.0, 0.5, 0.0, 0.0}, // Mountains
+            {Blocks::BlockId::BLUE, 0.7, 0.7, 0.0, 0.0, 0.0},  // Ocean
+            {Blocks::BlockId::GRASS, 1.0, 1.0, 0.2, 0.0, 0.0}, // Tundra
         };
 
         struct BiomeNear
@@ -91,6 +85,8 @@ namespace Minicube
             double humidity;
             double moutains;
         };
+
+        void init();
 
         class HeightMap
         {

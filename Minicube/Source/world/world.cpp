@@ -5,7 +5,7 @@ namespace Minicube
     World::World(Camera *camera) : m_perlinNoiseContext(time(0))
     {
         m_camera = camera;
-        // Blocks::init();
+        WorldGen::init();
     }
 
     void World::updateVisibleChunks()
@@ -31,6 +31,8 @@ namespace Minicube
                         m_chunks.set(pos, chunk);
                     }
                 }
+                playerChunkPosX = int(camPos.x) / 16;
+                playerChunkPosZ = int(camPos.z) / 16;
             }
         }
     }
@@ -95,7 +97,7 @@ namespace Minicube
             for (unsigned int i = 0; i < chunks.size(); i++)
             {
 
-                if ((i % 10 == 0 && i != 0) || lastChunkMapSize == 0)
+                if (i % 10 == 0 || lastChunkMapSize == 0)
                 {
                     glm::ivec3 camPos = m_camera->getPosition();
                     glm::vec2 playerChunkPos = glm::vec2(camPos.x / 16, camPos.z / 16);
@@ -122,6 +124,8 @@ namespace Minicube
                         m_chunks.unlock();
 
                         i = 0;
+                        if (chunks.size() == 0)
+                            continue;
                     }
                 }
 

@@ -119,8 +119,8 @@ namespace Minicube
         WorldGen::HeightMapData *heightMap = m_world->getHeightMapData(glm::ivec2(playerPos.x, playerPos.z));
         if (heightMap != nullptr)
         {
-            for (int i = 0; i < BIOME_COUNT; i++)
-                text::draw2DText(std::string(WorldGen::biomeNames[heightMap->biomes[i].biome]) + " " + std::to_string(int(heightMap->biomes[i].weight * 100)) + "%", 10, m_window.getSize().y - (122 + i * 24));
+            // for (int i = 0; i < BIOME_COUNT; i++)
+            //     text::draw2DText(std::string(WorldGen::biomeNames[heightMap->biomes[i].biome]) + " " + std::to_string(int(heightMap->biomes[i].weight * 100)) + "%", 10, m_window.getSize().y - (122 + i * 24));
 
             text::draw2DText("h: " + std::to_string(heightMap->humidity) + " t: " + std::to_string(heightMap->temperature) + " m: " + std::to_string(heightMap->moutains), 10, m_window.getSize().y - (122 + BIOME_COUNT * 24));
 

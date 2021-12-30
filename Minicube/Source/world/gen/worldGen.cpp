@@ -5,8 +5,110 @@ namespace Minicube
     namespace WorldGen
     {
 
+        BIOME getBiome(int x, int y, PerlinNoiseContext *perlinNoiseContext)
+        {
+
+                    double humidity = perlinNoiseContext->humidityNoise.noise(x, y);
+            double temperature = perlinNoiseContext->temperatureNoise.noise(x, y);
+
+            BIOME biome;
+
+            if (humidity < 0.5)
+            {
+                if (temperature < 0.5)
+                {
+                    biome = TUNDRA;
+                }
+                else
+                {
+                    biome = OCEAN;
+                }
+            }
+            else
+            {
+                if (temperature < 0.5)
+                {
+                    biome = MOUNTAINS;
+                }
+                else
+                {
+                    biome = FOREST;
+                }
+            }
+
+            return biome;
+        }
+
+#define BLEND_RADIUS 8
+#define BLEND_ARRAY_LENGTH (BLEND_RADIUS * 2 + 1) * (BLEND_RADIUS * 2 + 1)
+
+        double blurArray[BLEND_ARRAY_LENGTH];
+
+        void init()
+        {
+            double weightTotal = 0.0;
+            for (int iz = 0; iz < BLEND_RADIUS * 2 + 1; iz++)
+            {
+                int idz = iz - BLEND_RADIUS;
+                for (int ix = 0; ix < BLEND_RADIUS * 2 + 1; ix++)
+                {
+                    int idx = ix - BLEND_RADIUS;
+                    float thisWeight = (BLEND_RADIUS - idx - idz);
+                    if (thisWeight <= 0)
+                        continue; // We only compute for the circle of positive values of the blending function.
+                    // thisWeight *= thisWeight; // Make transitions smoother.
+                    weightTotal += thisWeight;
+                    blurArray[iz * (BLEND_RADIUS * 2 + 1) + ix] = thisWeight;
+                }
+            }
+
+            // Rescale the weights, so they all add up to 1.
+            for (int i = 0; i < BLEND_ARRAY_LENGTH; i++)
+                blurArray[i] /= weightTotal;
+        }
+
+        void blend(int x, int y, std::vector<BiomeNear> &results, PerlinNoiseContext *perlinNoiseContext)
+        {
+
+            for (int iz = 0; iz < BLEND_RADIUS * 2 + 1; iz++)
+            {
+                int idz = iz - BLEND_RADIUS;
+                for (int ix = 0; ix < BLEND_RADIUS * 2 + 1; ix++)
+                {
+                    int idx = ix - BLEND_RADIUS;
+
+                    // Weight of the blur kernel over this point
+                    float thisWeight = blurArray[iz * (BLEND_RADIUS * 2 + 1) + ix];
+                    if (thisWeight <= 0)
+                        continue; // We can skip when it's zero
+
+                    // Biome at this square within the blending circle
+                    BIOME thisBiome = getBiome(x + idx * 3, y + idz * 3, perlinNoiseContext);
+
+                    // If we've already seen this biome at least once, keep adding to its weight
+                    bool foundEntry = false;
+                    for (auto &entry : results)
+                    {
+                        if (entry.biome == thisBiome)
+                        {
+                            entry.weight += thisWeight;
+                            foundEntry = true;
+                            break;
+                        }
+                    }
+
+                    // Otherwise create a new results entry.
+                    if (!foundEntry)
+                    {
+                        results.push_back({thisBiome, thisWeight});
+                    }
+                }
+            }
+        }
+
         HeightMap::HeightMap(int x, int y, PerlinNoiseContext *perlinNoiseContext)
         {
+            std::vector<BiomeNear> results;
             for (int i = 0; i < 256; i++)
             {
                 int _x = (x * 16 + i / 16);
@@ -14,79 +116,32 @@ namespace Minicube
                 double height = perlinNoiseContext->heightNoise.noise(_x, _y);
                 double humidity = perlinNoiseContext->humidityNoise.noise(_x, _y);
                 double temperature = perlinNoiseContext->temperatureNoise.noise(_x, _y);
-                double moutains = perlinNoiseContext->moutainsNoise.noise(_x, _y);
 
                 data[i].humidity = humidity;
                 data[i].temperature = temperature;
-                data[i].moutains = moutains;
+                data[i].moutains = 0;
+
+                blend(_x, _y, results, perlinNoiseContext);
 
                 double totalHeight = 0.0;
                 double totalWeight = 0.0;
 
                 BIOME mainBiome;
-                double maxWeight = 0.0;
+                double mainBiomeWeight = 0.0;
 
-                for (int j = 0; j < BIOME_COUNT; j++)
+                for (auto &entry : results)
                 {
-                    double weight = 0.0;
-                    if (j == MOUNTAINS)
+                    totalHeight += pow(height, biomes[entry.biome].exp) * biomes[entry.biome].scale * entry.weight;
+                    totalWeight += entry.weight;
+                    if (entry.weight > mainBiomeWeight)
                     {
-                        if (height > 0.5 || (moutains > 0.7 && height > 0.6))
-                        {
-                            totalWeight = 3.0;
-                            totalHeight = pow(height, biomes[MOUNTAINS].exp) * biomes[MOUNTAINS].scale;
-                            mainBiome = MOUNTAINS;
-                            break;
-                        }
-                        else
-                        {
-                            double dx = std::max(0.7 - moutains, 0.0);
-                            double dy = std::max(0.5 - height, 0.0);
-                            double distance = std::min(dx, dy);
-                            if (distance < 0.1)
-                            {
-                                distance *= 10.0;
-                                distance = 1.0 - distance;
-                                weight = 6 * (distance * distance * distance * distance * distance) - 15 * (distance * distance * distance * distance) + 10 * (distance * distance * distance);
-                                weight *= 3;
-                            }
-                        }
-                        totalWeight += weight;
-                        totalHeight += pow(height, biomes[MOUNTAINS].exp) * biomes[MOUNTAINS].scale * weight;
+                        mainBiome = entry.biome;
+                        mainBiomeWeight = entry.weight;
                     }
-                    else
-                    {
-                        BiomeData biome = biomes[j];
-                        if (humidity > biome.startHumidity && humidity < biome.endHumidity && temperature > biome.startTemperature && temperature < biome.endTemperature)
-                        {
-                            weight = 1.0;
-                        }
-                        else
-                        {
-                            double dx = std::min(abs(biome.startHumidity - humidity), abs(biome.endHumidity - humidity));
-                            double dy = std::min(abs(biome.startTemperature - temperature), abs(biome.endTemperature - temperature));
-                            double distance = std::min(dx, dy);
-                            if (distance < 0.05)
-                            {
-                                distance *= 20.0;
-                                distance = 1.0 - distance;
-                                weight = 6 * (distance * distance * distance * distance * distance) - 15 * (distance * distance * distance * distance) + 10 * (distance * distance * distance);
-                            }
-                        }
-                        totalWeight += weight;
-                        totalHeight += pow(height, biome.exp) * biome.scale * weight;
-                    }
-                    if (weight >= maxWeight)
-                    {
-                        maxWeight = weight;
-                        mainBiome = (BIOME)j;
-                    }
-                    data[i].biomes[j].biome = (BIOME)j;
-                    data[i].biomes[j].weight = weight;
                 }
+                results.clear();
 
-                totalHeight /= totalWeight;
-                data[i].height = totalHeight * 80 + 30;
+                data[i].height = (totalHeight / totalWeight) * 80 + 30;
                 data[i].biome = mainBiome;
 
                 if (data[i].height > maxHeight)
