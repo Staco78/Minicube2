@@ -1,4 +1,5 @@
 #include "world/chunk.h"
+#include "world/verticalChunk.h"
 
 namespace Minicube
 {
@@ -235,27 +236,27 @@ namespace Minicube
         m_flags |= CHUNK_FLAG_IS_GENERATED;
         m_flags |= CHUNK_FLAG_NEED_REBUILD;
 
-        Chunk *chunk = m_chunkMap->get(m_pos + glm::ivec3(1, 0, 0));
+        Chunk *chunk = getChunk(m_pos + glm::ivec3(1, 0, 0));
         if (chunk != nullptr)
             chunk->addFlag(CHUNK_FLAG_NEED_REBUILD);
 
-        chunk = m_chunkMap->get(m_pos + glm::ivec3(-1, 0, 0));
+        chunk = getChunk(m_pos + glm::ivec3(-1, 0, 0));
         if (chunk != nullptr)
             chunk->addFlag(CHUNK_FLAG_NEED_REBUILD);
 
-        chunk = m_chunkMap->get(m_pos + glm::ivec3(0, 1, 0));
+        chunk = getChunk(m_pos + glm::ivec3(0, 1, 0));
         if (chunk != nullptr)
             chunk->addFlag(CHUNK_FLAG_NEED_REBUILD);
 
-        chunk = m_chunkMap->get(m_pos + glm::ivec3(0, -1, 0));
+        chunk = getChunk(m_pos + glm::ivec3(0, -1, 0));
         if (chunk != nullptr)
             chunk->addFlag(CHUNK_FLAG_NEED_REBUILD);
 
-        chunk = m_chunkMap->get(m_pos + glm::ivec3(0, 0, 1));
+        chunk = getChunk(m_pos + glm::ivec3(0, 0, 1));
         if (chunk != nullptr)
             chunk->addFlag(CHUNK_FLAG_NEED_REBUILD);
 
-        chunk = m_chunkMap->get(m_pos + glm::ivec3(0, 0, -1));
+        chunk = getChunk(m_pos + glm::ivec3(0, 0, -1));
         if (chunk != nullptr)
             chunk->addFlag(CHUNK_FLAG_NEED_REBUILD);
 
@@ -272,7 +273,7 @@ namespace Minicube
         int _y = y + m_pos.y * 16;
         int _z = z + m_pos.z * 16;
 
-        Chunk *chunk = m_chunkMap->get(glm::ivec3(floor(_x / 16.0), floor(_y / 16.0), floor(_z / 16.0)));
+        Chunk *chunk = getChunk(glm::ivec3(floor(_x / 16.0), floor(_y / 16.0), floor(_z / 16.0)));
 
         if (chunk == nullptr)
             return nullptr;
@@ -280,5 +281,13 @@ namespace Minicube
         glm::uvec3 blockPos = utils::getBlockOffset(_x, _y, _z);
 
         return chunk->getBlock(blockPos.x, blockPos.y, blockPos.z);
+    }
+
+    Chunk *Chunk::getChunk(glm::ivec3 pos)
+    {
+        VerticalChunk *chunk = m_chunkMap->get(glm::vec2(pos.x, pos.z));
+        if (chunk == nullptr)
+            return nullptr;
+        return chunk->getChunk(pos.y);
     }
 } // namespace Minicube

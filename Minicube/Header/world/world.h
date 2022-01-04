@@ -9,9 +9,9 @@
 
 #include "chunkMap.h"
 #include "chunk.h"
+#include "verticalChunk.h"
 #include "camera.h"
 #include "gen/worldGen.h"
-#include "heightMaps.h"
 
 namespace Minicube
 {
@@ -23,7 +23,17 @@ namespace Minicube
         void updateVisibleChunks();
         void draw(const Shader &shader);
         void startThreads();
-        Chunk *getChunk(const glm::ivec3 &pos);
+        inline VerticalChunk *getVerticalChunk(const glm::ivec2 &pos)
+        {
+            return m_chunks.get(pos);
+        }
+        inline Chunk *getChunk(const glm::ivec3 &pos)
+        {
+            VerticalChunk *verticalChunk = m_chunks.get(glm::ivec2(pos.x, pos.z));
+            if (verticalChunk == nullptr)
+                return nullptr;
+            return verticalChunk->getChunk(pos.y);
+        }
         Block *getBlock(int x, int y, int z);
         ChunkMap *getChunkMap()
         {
@@ -46,7 +56,6 @@ namespace Minicube
 
     private:
         ChunkMap m_chunks;
-        HeightMaps m_heightMaps;
         Camera *m_camera = nullptr;
         void updateChunksThread();
         void generateChunksThread();

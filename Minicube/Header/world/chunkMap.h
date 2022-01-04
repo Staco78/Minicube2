@@ -4,19 +4,17 @@
 #include <iostream>
 #include <mutex>
 
-#include "Glm/vec3.hpp"
+#include "Glm/vec2.hpp"
 
 namespace std
 {
     template <>
-    struct less<glm::ivec3>
+    struct less<glm::ivec2>
     {
-        bool operator()(const glm::ivec3 &left, const glm::ivec3 &right) const
+        bool operator()(const glm::ivec2 &left, const glm::ivec2 &right) const
         {
-            if (left.z == right.z && left.x == right.x)
+            if (left.x == right.x)
                 return left.y < right.y;
-            else if (left.x == right.x)
-                return left.z < right.z;
             else
                 return left.x < right.x;
         }
@@ -26,12 +24,12 @@ namespace std
 namespace Minicube
 {
 
-    class Chunk;
+    class VerticalChunk;
 
-    class ChunkMap : public std::map<glm::ivec3, Chunk *>
+    class ChunkMap : public std::map<glm::ivec2, VerticalChunk *>
     {
     public:
-        Chunk *get(glm::ivec3 key)
+        VerticalChunk *get(glm::ivec2 key)
         {
             m_mutex.lock();
             auto it = find(key);
@@ -44,7 +42,7 @@ namespace Minicube
             return it->second;
         }
 
-        void set(const glm::ivec3 &key, Chunk *value)
+        void set(const glm::ivec2 &key, VerticalChunk *value)
         {
             m_mutex.lock();
             operator[](key) = value;
@@ -54,7 +52,7 @@ namespace Minicube
         unsigned int size()
         {
             m_mutex.lock();
-            unsigned int ret = std::map<glm::ivec3, Chunk *>::size();
+            unsigned int ret = std::map<glm::ivec2, VerticalChunk *>::size();
             m_mutex.unlock();
             return ret;
         }

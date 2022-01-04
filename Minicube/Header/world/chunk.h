@@ -21,6 +21,8 @@
 namespace Minicube
 {
 
+    class VerticalChunk;
+
     class DynamicVBO
     {
     public:
@@ -115,7 +117,7 @@ namespace Minicube
 
         inline int getFlags() const
         {
-            return m_flags;
+            return m_flags.load();
         }
 
         inline void setFlags(int flags)
@@ -149,6 +151,7 @@ namespace Minicube
         }
 
         Block *getBlockInWorld(int x, int y, int z);
+        Chunk *getChunk(glm::ivec3 pos);
 
         Block *m_blocks = nullptr;
         glm::ivec3 m_pos;
@@ -157,6 +160,7 @@ namespace Minicube
         glm::mat4 m_model = glm::mat4(1.0f);
         ChunkMap *m_chunkMap = nullptr;
         WorldGen::HeightMap *m_heightMap = nullptr;
+        VerticalChunk *m_verticalChunk = nullptr;
 
         std::atomic<int> m_flags = CHUNK_FLAG_NEED_INIT;
         std::mutex m_isConstructing_mutex;

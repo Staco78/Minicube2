@@ -18,29 +18,23 @@ namespace Minicube
         {
             for (int z = playerChunkPosZ - m_renderDistance; z <= playerChunkPosZ + m_renderDistance; z++)
             {
-                if (getChunk(glm::ivec3(x, 0, z)) == nullptr)
+                if (getVerticalChunk(glm::ivec2(x, z)) == nullptr)
                 {
-                    WorldGen::HeightMap *heightMap = m_heightMaps.add(glm::ivec2(x, z), &m_perlinNoiseContext);
-                    int nbChunks = heightMap->maxHeight / 16 + 1;
-                    m_heightMaps.setUses(glm::ivec2(x, z), nbChunks);
-                    for (int y = 0; y < nbChunks; y++)
-                    {
-                        glm::ivec3 pos(x, y, z);
-                        Chunk *chunk = new Chunk(&m_chunks, pos);
-                        chunk->generate(heightMap);
-                        m_chunks.set(pos, chunk);
-                    }
+                    VerticalChunk *chunk = new VerticalChunk(glm::ivec2(x, z), &m_chunks);
+                    chunk->generate(&m_perlinNoiseContext);
+                    m_chunks.set(glm::ivec2(x, z), chunk);
                 }
+                camPos = m_camera->getPosition();
                 playerChunkPosX = int(camPos.x) / 16;
                 playerChunkPosZ = int(camPos.z) / 16;
             }
         }
     }
 
-    inline bool isVisible(const glm::ivec3 &chunkPos, int playerChunkPosX, int playerChunkPosZ, int renderDistance)
+    inline bool isVisible(const glm::ivec2 &chunkPos, int playerChunkPosX, int playerChunkPosZ, int renderDistance)
     {
         return chunkPos.x >= playerChunkPosX - renderDistance && chunkPos.x <= playerChunkPosX + renderDistance &&
-               chunkPos.z >= playerChunkPosZ - renderDistance && chunkPos.z <= playerChunkPosZ + renderDistance;
+               chunkPos.y >= playerChunkPosZ - renderDistance && chunkPos.y <= playerChunkPosZ + renderDistance;
     }
 
     void World::draw(const Shader &shader)
@@ -50,27 +44,39 @@ namespace Minicube
         int playerChunkPosZ = int(camPos.z) / 16;
 
         m_chunks.lock();
-        auto it = m_chunks.begin();
-        while (it != m_chunks.end())
+        auto it1 = m_chunks.begin();
+        while (it1 != m_chunks.end())
         {
-            if (!isVisible(it->first, playerChunkPosX, playerChunkPosZ, m_renderDistance))
+            auto it2 = it1->second->begin();
+            bool addIt = true;
+            while (it2 != it1->second->end())
             {
-                if (it->second->getFlags() & CHUNK_FLAG_IS_BUILDING)
-                    it++;
+                if (!isVisible(it1->first, playerChunkPosX, playerChunkPosZ, m_renderDistance))
+                {
+                    if ((*it2)->getFlags() & CHUNK_FLAG_IS_BUILDING)
+                        it2++;
+                    else
+                    {
+                        it2 = it1->second->erase(it2);
+                        if (it1->second->size() == 0)
+                        {
+                            delete it1->second;
+                            it1 = m_chunks.erase(it1);
+                            addIt = false;
+                            break;
+                        }
+                    }
+                }
                 else
                 {
-                    m_heightMaps.erase(glm::ivec2(it->first.x, it->first.z));
-                    delete it->second;
-                    it = m_chunks.erase(it);
+                    if ((*it2)->getFlags() & CHUNK_FLAG_NEED_INIT)
+                        (*it2)->init();
+                    (*it2)->draw(shader);
+                    it2++;
                 }
             }
-            else
-            {
-                if (it->second->getFlags() & CHUNK_FLAG_NEED_INIT)
-                    it->second->init();
-                it->second->draw(shader);
-                it++;
-            }
+            if (addIt)
+                it1++;
         }
         m_chunks.unlock();
     }
@@ -80,7 +86,7 @@ namespace Minicube
         while (true)
         {
 
-            static std::vector<Chunk *> chunks;
+            static std::vector<VerticalChunk *> chunks;
             static glm::vec2 lastPlayerChunkPos;
             static int lastChunkMapSize = 0;
 
@@ -116,10 +122,10 @@ namespace Minicube
                         {
                             chunks.push_back(it->second);
                         }
-                        std::sort(chunks.begin(), chunks.end(), [playerChunkPos](Chunk *a, Chunk *b)
+                        std::sort(chunks.begin(), chunks.end(), [playerChunkPos](VerticalChunk *a, VerticalChunk *b)
                                   {
-                                glm::vec2 posA(a->getPos().x, a->getPos().z);
-                                glm::vec2 posB(b->getPos().x, b->getPos().z);
+                                glm::vec2 posA(a->getPos().x, a->getPos().y);
+                                glm::vec2 posB(b->getPos().x, b->getPos().y);
                                 return (glm::dot(playerChunkPos - posB, playerChunkPos - posB) > glm::dot(playerChunkPos - posA, playerChunkPos - posA)); });
                         m_chunks.unlock();
 
@@ -129,8 +135,11 @@ namespace Minicube
                     }
                 }
 
-                if (chunks[i]->getFlags() & CHUNK_FLAG_NEED_REBUILD)
-                    chunks[i]->build();
+                for (auto it = chunks[i]->begin(); it != chunks[i]->end(); it++)
+                {
+                    if ((*it)->getFlags() & CHUNK_FLAG_NEED_REBUILD)
+                        (*it)->build();
+                }
             }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -152,11 +161,6 @@ namespace Minicube
         generateChunksThread.detach();
         std::thread updateChunksThread(&World::updateChunksThread, this);
         updateChunksThread.detach();
-    }
-
-    inline Chunk *World::getChunk(const glm::ivec3 &pos)
-    {
-        return m_chunks.get(pos);
     }
 
     Block *World::getBlock(int x, int y, int z)

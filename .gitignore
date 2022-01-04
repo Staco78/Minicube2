@@ -8,3 +8,5 @@ Bin/*
 !Bin/assets/
 start.sh
 CMakeSettings.json
+.vs/
+out/
